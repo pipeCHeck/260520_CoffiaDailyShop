@@ -1,6 +1,7 @@
 #pragma once
 #include "NzWndBase.h"
 #include "Utillity.h"
+#include <functional>
 
 // [CHECK] #7  전방 선언을 사용하여 헤더파일의 의존성을 줄임.
 class GameTimer;
@@ -74,6 +75,14 @@ private:
     void OnLButtonDown(int x, int y);
     void OnRButtonDown(int x, int y);
 
+    void OnZKeyDown();
+    void OnXKeyDown();
+
+    void OnUpKeyDown();
+    void OnDownKeyDown();
+    void OnLeftKeyDown();
+    void OnRightKeyDown();
+
     bool IsValidSpawnPosition(learning::Vector2f pos, int selfCheck = -1);
 
     void FixedUpdate();
@@ -123,5 +132,9 @@ private:
     MOUSE_POS m_PlayerTargetPos = { 0, 0 };
     MOUSE_POS m_EnemySpawnPos = { 0, 0 };
 
-
+    bool keys[256] = {};    // 특정 키가 눌려있는지 확인
+    
+    std::function<void()> OnKey[256];       // 키가 눌릴때 나올 메서드
+    std::function<void()> OnKeyDown[256];   // 키가 딱 눌린 순간에만 나올 메서드
+    std::function<void()> OnKeyUp[256];   // 키가 딱 눌린 순간에만 나올 메서드
 };

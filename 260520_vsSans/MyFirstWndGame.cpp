@@ -15,7 +15,7 @@ constexpr int MAX_GAME_OBJECT_COUNT = 1000;
 
 bool MyFirstWndGame::Initialize()
 {
-    
+
     m_pGameTimer = new GameTimer(); // _타이머 객체를 만듦(힙)
     m_pGameTimer->Reset();          // _타이머 초기화
 
@@ -50,14 +50,14 @@ bool MyFirstWndGame::Initialize()
     m_pPlayerBitmapInfo = renderHelp::CreateBitmapInfo(L"./Resource/redbird.png");
     m_pEnemyBitmapInfo = renderHelp::CreateBitmapInfo(L"./Resource/graybird.png");
 
-    m_pSans_Head = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_Head.png");
-    m_pSans_Torso = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_Torso.png");
+    m_pSans_Head = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_Head.png", 17, 1);
+    m_pSans_Torso = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_Torso.png", 8, 1);
     m_pSans_Legs_01 = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_Legs_01.png");
     m_pSans_Legs_02 = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_Legs_02.png");
-    m_pSans_Attack_Horizontal = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_Attack_Horizontal.png");
-    m_pSans_Attack_Vertical = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_Attack_Vertical.png");
+    m_pSans_Attack_Horizontal = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_Attack_Horizontal.png", 6, 1);
+    m_pSans_Attack_Vertical = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_Attack_Vertical.png", 7, 1);
     m_pSans_SpeechBubble = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_SpeechBubble.png");
-    m_pGB_Default = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Attacks/GB_Default.png");
+    m_pGB_Default = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Attacks/GB_Default.png", 6, 1);
     m_pBone_Horizontal_01 = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Attacks/Bone_Horizontal_01.png");
     m_pBone_Horizontal_02 = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Attacks/Bone_Horizontal_02.png");
     m_pBone_Vertical_01 = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Attacks/Bone_Vertical_01.png");
@@ -70,15 +70,70 @@ bool MyFirstWndGame::Initialize()
     m_pPlayer_Heart = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/Player_Heart.png");
     m_pPlayer_HeartBroken = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/Player_HeartBroken.png");
     m_pPlayer_HeartFragment = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/Player_HeartFragment.png");
-    m_pUI_ChoiceButton = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/UI_ChoiceButton.png");
+    m_pUI_ChoiceButton = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/UI_ChoiceButton.png", 1, 8);
     m_pUI_AttackMiss = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/UI_AttackMiss.png");
     m_pUI_AttackDamage = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/UI_AttackDamage.png");
     m_pAttack_Background = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/Attack_Background.png");
-    m_pAttack_Bar = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/Attack_Bar.png");
-    m_pAttack_Slash = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/Attack_Slash.png");
+    m_pAttack_Bar = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/Attack_Bar.png", 2, 1);
+    m_pAttack_Slash = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/Attack_Slash.png", 6, 1);
     m_pUI_Box = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/UI_Box.png");
 
 #pragma endregion
+
+#pragma region keyFunc
+
+    //Z 키 입력 시
+    OnKeyDown['Z'] = []() {
+      std::cout << "Z down" << std::endl;
+      };
+    OnKey['Z'] = []() {
+      std::cout << "Z" << std::endl;
+      };
+    OnKeyUp['Z'] = []() {
+      std::cout << "Z up" << std::endl;
+      };
+    
+    /*
+    OnKeyDown['X'] = []() {
+
+        };
+    OnKey['X'] = []() {
+
+        };
+
+    OnKeyDown[VK_UP] = []() {
+
+        };
+    OnKey[VK_UP] = []() {
+
+        };
+
+    OnKeyDown[VK_DOWN] = []() {
+
+        };
+    OnKey[VK_DOWN] = []() {
+
+        };
+
+    OnKeyDown[VK_LEFT] = []() {
+
+        };
+    OnKey[VK_LEFT] = []() {
+
+        };
+
+    OnKeyDown[VK_RIGHT] = []() {
+
+        };
+    OnKey[VK_RIGHT] = []() {
+
+        };
+
+        */
+    
+
+#pragma endregion
+
 
     // [CHECK]. 첫 번째 게임 오브젝트는 플레이어 캐릭터로 고정!
     CreatePlayer(); // _0번 인덱스에 플레이어 원 객체 넣기
@@ -95,6 +150,32 @@ void MyFirstWndGame::Run()
         // 몬가 입력이 있다면 msg에 들어감
         if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) // _메시지 확인할 곳, 어떤 메시지(nullptr은 모두), 모든 범위, 확인하고 확인한 메시지는 지울것.
         {
+            if (msg.wParam < 256) {
+                bool hasKeyEvent = (OnKey[msg.wParam] || OnKeyDown[msg.wParam] || OnKeyUp[msg.wParam]);
+
+                if (msg.message == WM_KEYDOWN && hasKeyEvent) {
+                    if (!keys[msg.wParam] && OnKeyDown[msg.wParam]) {
+                        OnKeyDown[msg.wParam]();
+                    }
+                    keys[msg.wParam] = true;
+                }
+                else if (msg.message == WM_KEYUP && hasKeyEvent) {
+                    if (OnKeyUp[msg.wParam])
+                        OnKeyUp[msg.wParam]();
+                    keys[msg.wParam] = false;
+                }
+            }
+
+
+            /*
+            if (msg.message == WM_KEYDOWN)
+            {
+                keys[msg.wParam] = true;
+            }
+            else if (msg.message == WM_KEYUP) {
+                keys[msg.wParam] = false;
+            }*/
+
             if (msg.message == WM_LBUTTONDOWN)  // _좌버튼클릭
             {
                 MyFirstWndGame::OnLButtonDown(LOWORD(msg.lParam), HIWORD(msg.lParam)); // _lParam은 그냥 롱롱 변수지만 상하위 비트에 나눠서 x,y값을 저장해놓는거라, 그걸 분리해서 xy값을 각각 인자로 전달하는 거.
@@ -557,6 +638,14 @@ void MyFirstWndGame::OnRButtonDown(int x, int y)
         // 가장 가까운 오브젝트와의 거리 + 반지름 + 여유값 (가장 가까운 오브젝트가 다음번에는 )
         spawnDistance = minDistance + (radius * 2) + 1.0f;
     }
+}
+
+void MyFirstWndGame::OnZKeyDown() {
+
+}
+
+void MyFirstWndGame::OnXKeyDown() {
+
 }
 
 // _이 위치가 유효한 스폰 위치인지 확인하는 함수(겹치는거 있으면 false, 없는 true)

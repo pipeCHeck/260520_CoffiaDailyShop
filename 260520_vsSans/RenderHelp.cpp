@@ -36,6 +36,7 @@ namespace renderHelp
             return true;
         }
 
+        // 이미지 파일이 정상적으로 로딩되는지 유무 반환
         bool LoadImageFromFile(__in LPCWSTR filename, __out HBITMAP& hBitmap) {
             hBitmap = nullptr;
             if (m_pFactory == nullptr)
@@ -126,9 +127,17 @@ namespace renderHelp
             if (m_pConverter) m_pConverter->Release();
         }
 
+        // 그대로 반환
         BitmapInfo* CreateBitmapInfo(HBITMAP hBitmap)
         {
             BitmapInfo* pNewBitmap = new BitmapInfo(hBitmap);
+
+            return pNewBitmap;
+        }
+
+        BitmapInfo* CreateBitmapInfo(HBITMAP hBitmap, int frameCountX, int frameCountY, int offsetX = 0, int offsetY = 0)
+        {
+            BitmapInfo* pNewBitmap = new BitmapInfo(hBitmap, frameCountX, frameCountY, offsetX, offsetY);
 
             return pNewBitmap;
         }
@@ -161,6 +170,32 @@ namespace renderHelp
         if (GWICInitializer.LoadImageFromFile(filename, hBitmap))
         {
             pBitmapInfo = GWICInitializer.CreateBitmapInfo(hBitmap);
+        }
+
+        GWICInitializer.Clean();
+
+        return pBitmapInfo;
+    }
+
+    BitmapInfo* CreateBitmapInfo(LPCWSTR filename, int frameCountX, int frameCountY, int offsetX, int offsetY)
+    {
+        // 가로 혹은 세로 갯수가 0개일 수는 없음
+        bool possible = frameCountX > 0 && frameCountY > 0;
+        if (possible) {
+            return nullptr;
+        }
+
+        static bool bCoInit = GWICInitializer.Initialize();
+        if (false == bCoInit)
+        {
+            return nullptr;
+        }
+
+        HBITMAP hBitmap = nullptr;
+        BitmapInfo* pBitmapInfo = nullptr;
+        if (GWICInitializer.LoadImageFromFile(filename, hBitmap))
+        {
+            pBitmapInfo = GWICInitializer.CreateBitmapInfo(hBitmap, frameCountX, frameCountY, offsetX, offsetY);
         }
 
         GWICInitializer.Clean();
