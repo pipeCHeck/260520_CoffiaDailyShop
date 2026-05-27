@@ -2,6 +2,9 @@
 
 #include "Utillity.h"
 #include <algorithm>
+#include <vector>
+using namespace std;
+
 // [CHECK]. namespace 포함해서 전방 선언해야 함
 namespace learning
 {
@@ -92,7 +95,7 @@ public:
     GameObject(ObjectType type) : GameObjectBase(type) {}
     ~GameObject() override;
 
-    void SetBitmapInfo(BitmapInfo* bitmapInfo);
+    void AddBitmapInfo(BitmapInfo* bitmapInfo);
 
     void Update(float deltaTime) override;
     void Render(HDC hdc, COLORREF color) override;
@@ -118,8 +121,9 @@ protected:
     void UpdateFrame(float deltaTime);
 
     // Bitmap 정보
-    BitmapInfo* m_pBitmapInfo = nullptr;
-
+    //BitmapInfo* m_pBitmapInfo = nullptr;
+    vector<BitmapInfo*> m_pBitmapInfo = {};
+    /*
     // 점진적으로 예쁘게 고쳐 보아요.
     struct FrameFPos
     {
@@ -127,12 +131,13 @@ protected:
         int y;
     };
     // 프레임 정보: 왜 14개냐고 물으시면 셌다고 밖에...:)
+   
     FrameFPos m_frameXY[14] = { { 0, 0 }, };
     int m_frameWidth = 0;
     int m_frameHeight = 0;
     int m_frameIndex = 0;
     int m_frameCount = 14; // 프레임 수
-
+    */
     int m_width = 0;
     int m_height = 0;
 

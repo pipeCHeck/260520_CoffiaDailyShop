@@ -15,7 +15,6 @@ constexpr int MAX_GAME_OBJECT_COUNT = 1000;
 
 bool MyFirstWndGame::Initialize()
 {
-
     m_pGameTimer = new GameTimer(); // _타이머 객체를 만듦(힙)
     m_pGameTimer->Reset();          // _타이머 초기화
 
@@ -23,7 +22,7 @@ bool MyFirstWndGame::Initialize()
     const wchar_t* windowName = L"MyFirstWndGame";  // _윈도우 창 이름
 
     // super는 부모를 뜻함, 부모에 Create를 불러와요~ 라는 뜻
-    if (false == __super::Create(className, windowName, 1024, 720))
+    if (false == __super::Create(className, windowName, 1024, 768))
     {
         return false;
     }
@@ -47,17 +46,19 @@ bool MyFirstWndGame::Initialize()
     }
 
 #pragma region resource
+
+    // 스프라이트 이미지 불러오기
     m_pPlayerBitmapInfo = renderHelp::CreateBitmapInfo(L"./Resource/redbird.png");
     m_pEnemyBitmapInfo = renderHelp::CreateBitmapInfo(L"./Resource/graybird.png");
 
-    m_pSans_Head = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_Head.png", 17, 1);
-    m_pSans_Torso = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_Torso.png", 8, 1);
+    m_pSans_Head = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_Head.png", 17, 1, 17);
+    m_pSans_Torso = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_Torso.png", 8, 1, 8);
     m_pSans_Legs_01 = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_Legs_01.png");
     m_pSans_Legs_02 = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_Legs_02.png");
-    m_pSans_Attack_Horizontal = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_Attack_Horizontal.png", 6, 1);
-    m_pSans_Attack_Vertical = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_Attack_Vertical.png", 7, 1);
+    m_pSans_Attack_Horizontal = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_Attack_Horizontal.png", 6, 1, 6);
+    m_pSans_Attack_Vertical = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_Attack_Vertical.png", 7, 1, 7);
     m_pSans_SpeechBubble = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_SpeechBubble.png");
-    m_pGB_Default = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Attacks/GB_Default.png", 6, 1);
+    m_pGB_Default = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Attacks/GB_Default.png", 6, 1, 6);
     m_pBone_Horizontal_01 = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Attacks/Bone_Horizontal_01.png");
     m_pBone_Horizontal_02 = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Attacks/Bone_Horizontal_02.png");
     m_pBone_Vertical_01 = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Attacks/Bone_Vertical_01.png");
@@ -70,67 +71,86 @@ bool MyFirstWndGame::Initialize()
     m_pPlayer_Heart = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/Player_Heart.png");
     m_pPlayer_HeartBroken = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/Player_HeartBroken.png");
     m_pPlayer_HeartFragment = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/Player_HeartFragment.png");
-    m_pUI_ChoiceButton = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/UI_ChoiceButton.png", 1, 8);
+    m_pUI_ChoiceButton = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/UI_ChoiceButton.png", 1, 8, 8);
     m_pUI_AttackMiss = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/UI_AttackMiss.png");
     m_pUI_AttackDamage = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/UI_AttackDamage.png");
     m_pAttack_Background = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/Attack_Background.png");
-    m_pAttack_Bar = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/Attack_Bar.png", 2, 1);
-    m_pAttack_Slash = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/Attack_Slash.png", 6, 1);
+    m_pAttack_Bar = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/Attack_Bar.png", 2, 1, 2);
+    m_pAttack_Slash = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/Attack_Slash.png", 6, 1, 6);
     m_pUI_Box = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/UI_Box.png");
 
 #pragma endregion
 
+    // 키 입력 함수 정의
 #pragma region keyFunc
 
-    //Z 키 입력 시
+    // Z 키 입력 시
     OnKeyDown['Z'] = []() {
-      std::cout << "Z down" << std::endl;
-      };
+        std::cout << "Z down" << std::endl;
+        };
     OnKey['Z'] = []() {
-      std::cout << "Z" << std::endl;
-      };
+        std::cout << "Z";
+        };
     OnKeyUp['Z'] = []() {
-      std::cout << "Z up" << std::endl;
-      };
-    
-    /*
-    OnKeyDown['X'] = []() {
+        std::cout << std::endl << "Z up" << std::endl;
+        };
 
+    // X 키 입력 시
+    OnKeyDown['X'] = []() {
+        std::cout << "X down" << std::endl;
         };
     OnKey['X'] = []() {
-
+        std::cout << "X";
+        };
+    OnKeyUp['X'] = []() {
+        std::cout << std::endl << "X up" << std::endl;
         };
 
-    OnKeyDown[VK_UP] = []() {
 
+    // VK_UP 키 입력 시
+    OnKeyDown[VK_UP] = []() {
+        std::cout << "VK_UP down" << std::endl;
         };
     OnKey[VK_UP] = []() {
-
+        std::cout << "VK_UP ";
+        };
+    OnKeyUp[VK_UP] = []() {
+        std::cout << std::endl << "VK_UP up" << std::endl;
         };
 
+    // VK_DOWN 키 입력 시
     OnKeyDown[VK_DOWN] = []() {
-
+        std::cout << "VK_DOWN down" << std::endl;
         };
     OnKey[VK_DOWN] = []() {
-
+        std::cout << "VK_DOWN ";
+        };
+    OnKeyUp[VK_DOWN] = []() {
+        std::cout << std::endl << "VK_DOWN up" << std::endl;
         };
 
+    // VK_LEFT 키 입력 시
     OnKeyDown[VK_LEFT] = []() {
-
+        std::cout << "VK_LEFT down" << std::endl;
         };
     OnKey[VK_LEFT] = []() {
-
+        std::cout << "VK_LEFT ";
+        };
+    OnKeyUp[VK_LEFT] = []() {
+        std::cout << std::endl << "VK_LEFT up" << std::endl;
         };
 
+    // VK_RIGHT 키 입력 시
     OnKeyDown[VK_RIGHT] = []() {
-
+        std::cout << "VK_RIGHT down" << std::endl;
         };
     OnKey[VK_RIGHT] = []() {
-
+        std::cout << "VK_RIGHT ";
+        };
+    OnKeyUp[VK_RIGHT] = []() {
+        std::cout << std::endl << "VK_RIGHT up" << std::endl;
         };
 
-        */
-    
 
 #pragma endregion
 
@@ -226,14 +246,22 @@ void MyFirstWndGame::Finalize()
 
 void MyFirstWndGame::FixedUpdate()
 {
+    /*
     if (m_EnemySpawnPos.x != 0 && m_EnemySpawnPos.y != 0)
     {
         CreateEnemy();
     }
+    */
 }
 
 void MyFirstWndGame::LogicUpdate()
 {
+    for (int i = 0; i < sizeof(OnKey) / sizeof(OnKey[0]); i++) {
+        if (keys[i]) {
+            OnKey[i]();
+        }
+    }
+
     UpdatePlayerInfo();
 
     // 각 오브젝트를 다 체크해서 업데이트하기
@@ -258,7 +286,7 @@ void MyFirstWndGame::CreatePlayer()
     pNewObject->SetSpeed(0.8f); // 일단, 임의로 설정   // _m_speed에 값 저장
 
     pNewObject->SetColliderCircle(50.0f); // 일단, 임의로 설정. 오브젝트 설정할 거 다 하고 나서 하자.
-    pNewObject->SetBitmapInfo(m_pPlayerBitmapInfo);
+    pNewObject->AddBitmapInfo(m_pSans_Attack_Vertical);
 
     pNewObject->SetWidth(100);
     pNewObject->SetHeight(100);
@@ -281,7 +309,7 @@ void MyFirstWndGame::CreateEnemy()
     pNewObject->SetSpeed(0.4f); // 일단, 임의로 설정   
 
     pNewObject->SetColliderCircle(50.0f); // 일단, 임의로 설정. 오브젝트 설정할 거 다 하고 나서 하자.
-    pNewObject->SetBitmapInfo(m_pEnemyBitmapInfo);
+    pNewObject->AddBitmapInfo(m_pEnemyBitmapInfo);
 
     pNewObject->SetWidth(100);
     pNewObject->SetHeight(100);
