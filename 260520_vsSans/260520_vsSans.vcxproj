@@ -133,6 +133,7 @@
     <ClCompile Include="Utillity.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Animation.h" />
     <ClInclude Include="Collider.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GameTimer.h" />

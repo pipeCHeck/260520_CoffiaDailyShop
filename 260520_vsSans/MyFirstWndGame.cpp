@@ -51,9 +51,9 @@ bool MyFirstWndGame::Initialize()
     m_pPlayerBitmapInfo = renderHelp::CreateBitmapInfo(L"./Resource/redbird.png");
     m_pEnemyBitmapInfo = renderHelp::CreateBitmapInfo(L"./Resource/graybird.png");
 
-    m_pSans_Head = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_Head.png", 17, 1, 17);
-    m_pSans_Torso = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_Torso.png", 8, 1, 8);
-    m_pSans_Legs_01 = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_Legs_01.png");
+    m_pSans_Head = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_Head.png", 17, 1, 17, 0, -50);
+    m_pSans_Torso = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_Torso.png", 8, 1, 8, 0, 0);
+    m_pSans_Legs_01 = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_Legs_01.png", 1, 1 ,1 , 0, 35);
     m_pSans_Legs_02 = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_Legs_02.png");
     m_pSans_Attack_Horizontal = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_Attack_Horizontal.png", 6, 1, 6);
     m_pSans_Attack_Vertical = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/Sans/Sans_Attack_Vertical.png", 7, 1, 7);
@@ -78,6 +78,10 @@ bool MyFirstWndGame::Initialize()
     m_pAttack_Bar = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/Attack_Bar.png", 2, 1, 2);
     m_pAttack_Slash = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/Attack_Slash.png", 6, 1, 6);
     m_pUI_Box = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/UI_Box.png");
+
+    std::cout << "Debuggggg" << std::endl;
+    std::cout << "sansHead curFrame:" << m_pSans_Head->GetCurFrame() << " / GetWidth: " << m_pSans_Head->GetWidth() << std::endl;
+    std::cout << "sansHead GetFrameCountX:" << m_pSans_Head->GetFrameCountX() << " / GetWidth: " << m_pSans_Head->GetFrameWidth() << std::endl;
 
 #pragma endregion
 
@@ -286,7 +290,9 @@ void MyFirstWndGame::CreatePlayer()
     pNewObject->SetSpeed(0.8f); // 일단, 임의로 설정   // _m_speed에 값 저장
 
     pNewObject->SetColliderCircle(50.0f); // 일단, 임의로 설정. 오브젝트 설정할 거 다 하고 나서 하자.
-    pNewObject->AddBitmapInfo(m_pSans_Attack_Vertical);
+    pNewObject->AddBitmapInfo(m_pSans_Legs_01);
+    pNewObject->AddBitmapInfo(m_pSans_Torso);
+    pNewObject->AddBitmapInfo(m_pSans_Head);
 
     pNewObject->SetWidth(100);
     pNewObject->SetHeight(100);
@@ -424,77 +430,6 @@ void MyFirstWndGame::UpdateEnemyInfo(int index, float deltaTime)
 
     targetDir.Normalize();
     pCurEnemy->SetDirection(targetDir); // 이동 방향 지정
-
-    // 메모
-    /*
-    제일 가까운 오브젝트 탐색
-
-
-int 제일 가까운 오브젝트 탐색(Vector2 좌표, int 자신인덱트, int 제외인덱스 = -1) 
-{
-	float distance = -1;
-	int index;
-	for (모든 오브젝트 탐색) 
-	{
-		if (!오브젝트) continue;
-		if (i == 자신인덱스 || i == 제외인덱스) continue;
-		float 지금 옵젝 거리 = (오브젝트위치-좌표).Length();
-		if (distance == -1 || distance > 지금옵젝거리) 
-		{
-			distance = 지금 옵젝거리;
-			index = i;
-		}
-	}
-}
-
-
-void 업데이트 애너미 인포(int index) 
-{
-	// 플레이어, 자신, 가장 가까운 오브젝트
-	GameObject* pPlayer = GetPlayer();
-	GameObject* pCurEnemy = GetGameObject(index);
-	GameObject* pNearestObject = GetGameObject(제일 가까운 오브젝트 탐색());
-
-	겹치지 않는 위치로 이동(int index)
-
-	행동 우선 순위
-	1. 이미 뭐랑 겹쳐있는가?
-		1-1. 충돌한 오브젝트와의 방향벡터를 계산하여 겹치지 않는 방향으로 이동(종료)
-	2. 플레이어를 향하는 방향 벡터를 계산
-	3. 동선상 다음 프레임에 이동할 좌표에 플레이어가 있는가?
-		3-1. 목표에 도착했으니 멈춤(종료)
-	4. 동선상 다음 프레임에 이동할 좌표에 (플레이어가 아닌)방해물이 있는가?
-		4-1. 방해물을 피하는 방향 중에서 플레이어에 가까운 방향으로 방향벡터를 수정, 동시에 list에 방해물 인덱스를 저장.
-		4-2. 바꾼 방향 벡터에서도 플레이어가 아닌 방해물이 있다면? list에 해당 방해물 인덱스가 있는지 확인함
-			4-2-1. 인덱스가 없다면 새로운 방향 벡터 생성(4-2로 이동/충돌안하는 벡터를 찾으면 거기로 이동/종료)
-			4-2-2. 만약 list에 저장된 인덱스 방해물과 또 충돌한다면 그냥 움직이지 않고 정지(종료)
-	5. 동선에 아무도 없음
-		5-1. 그냥 동선대로 이동(종료)
-}
-
-unordered_set collidedObjects
-//(필요없)좌표, 인덱스(기본값-1), 제외인덱스(기본값-1)를 넘기고 / 해당 좌표에 해당 인덱스를 제외한 충돌체가 있는지 확인(충돌체가 없다면 -1, 있다면 인덱스를 반환)
-좌표, 인덱스(기본값-1), 제외인덱스(기본값-1)를 넘기고 / 해당 좌표와 가장 가까운 오브젝트가 뭔지 확인(다른 오브젝트가 없다면 -1, 오브젝트의 인덱스 반환)
-좌표, 반지름, *게임오브젝트를 넘기고 / 해당 오브젝트가 좌표의 오브젝트와 충돌하는지 확인(bool값 반환)
-
-
-void 겹치지 않는 위치로 이동(int index)
-
-GameObject* pCurEnemy = GetGameObject(index);
-GameObject* pNearestObject = GetGameObject(제일 가까운 오브젝트 탐색(pCur));
-가장 가까운 오브젝트와 충돌 여부 확인
-
-if (충돌했을 경우) 
-{
-	해당 오브젝트와의 방향 벡터 확인
-	해당 오브젝트와의 거리 확인
-	나의 위치 = 방향 벡터.노말라이즈 * -1 + 반지름 * 2
-}
-
-
-
-
-    */
 }
 
 void MyFirstWndGame::Update()

@@ -187,10 +187,11 @@ namespace renderHelp
     {
         // 가로 혹은 세로 갯수가 0개일 수는 없음
         bool possible = frameCountX > 0 && frameCountY > 0;
-        if (possible) {
+        if (!possible) {
             return nullptr;
         }
 
+        //std::cout << "Debuggggggggggggg" << filename << std::endl;
         static bool bCoInit = GWICInitializer.Initialize();
         if (false == bCoInit)
         {

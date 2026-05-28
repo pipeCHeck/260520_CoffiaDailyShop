@@ -21,6 +21,11 @@ GameObject::~GameObject()
     }
 }
 
+void GameObject::ClearBitmapInfo() 
+{
+    m_pBitmapInfo.clear();
+}
+
 void GameObject::AddBitmapInfo(BitmapInfo* bitmapInfo) 
 {
     if (bitmapInfo == nullptr)
@@ -218,7 +223,11 @@ void GameObject::DrawBitmap(HDC hdc)
 
     for (int i = 0; i < m_pBitmapInfo.size(); i++) {
 
-        if (m_pBitmapInfo[0]->GetBitmapHandle() == nullptr) continue;
+        if (m_pBitmapInfo[i]->GetBitmapHandle() == nullptr) continue;
+
+        std::cout << "sansHead curFrame:" << m_pBitmapInfo[i]->GetCurFrame() << " / GetWidth: " << m_pBitmapInfo[i]->GetWidth() << std::endl;
+        std::cout << "sansHead GetFrameCountX:" << m_pBitmapInfo[i]->GetFrameCountX() << " / GetWidth: " << m_pBitmapInfo[i]->GetFrameWidth() << std::endl;
+
 
         HBITMAP hOldBitmap = (HBITMAP)SelectObject(hBitmapDC, m_pBitmapInfo[i]->GetBitmapHandle());
 
@@ -229,17 +238,30 @@ void GameObject::DrawBitmap(HDC hdc)
         blend.AlphaFormat = AC_SRC_ALPHA;
 
         // 이미지의 위치값
-        const int x = m_pos.x - m_pBitmapInfo[i]->GetWidth() / 2;
-        const int y = m_pos.y - m_pBitmapInfo[i]->GetHeight() / 2;
+        //const int x = 0;
+        //const int y = 0;
+
+        int spriteSizeX = m_pBitmapInfo[i]->GetFrameWidth() * 2;
+        int spriteSizeY = m_pBitmapInfo[i]->GetFrameHeight() * 2;
+
+        const int x = m_pos.x - (spriteSizeX /2);
+        const int y = m_pos.y - (spriteSizeY /2);
         
         // 시작 점
         const int srcX = 
-            ((m_pBitmapInfo[i]->GetCurFrame() % m_pBitmapInfo[i]->GetFrameCountY()) - 1) * m_pBitmapInfo[i]->GetFrameWidth();
+            ((m_pBitmapInfo[i]->GetCurFrame() % m_pBitmapInfo[i]->GetFrameCountY())) * m_pBitmapInfo[i]->GetFrameWidth();
         const int srcY = 
-            ((m_pBitmapInfo[i]->GetCurFrame() / m_pBitmapInfo[i]->GetFrameCountY()) - 1) * m_pBitmapInfo[i]->GetFrameHeight();
+            ((m_pBitmapInfo[i]->GetCurFrame() / m_pBitmapInfo[i]->GetFrameCountY())) * m_pBitmapInfo[i]->GetFrameHeight();
 
-        AlphaBlend(hdc, x, y, m_width, m_height, 
+        AlphaBlend(hdc, x + m_pBitmapInfo[i]->GetOffsetX(), y + m_pBitmapInfo[i]->GetOffsetY(), spriteSizeX, spriteSizeY,
             hBitmapDC, srcX, srcY, m_pBitmapInfo[i]->GetFrameWidth(), m_pBitmapInfo[i]->GetFrameHeight(), blend);
+
+        std::cout << "sansHead xy:" << x << " / " << y << std::endl;
+        std::cout << "sansHead m_widthm_height:" << m_width << " / " << m_height << std::endl;
+        std::cout << "sansHead srcX:" << srcX << " / " << srcY << std::endl;
+        std::cout << "sansHead m_pBitmapInfo:" << m_pBitmapInfo[i]->GetFrameWidth() << " / " << m_pBitmapInfo[i]->GetFrameHeight() << std::endl;
+        std::cout << std::endl;
+
 
         // 비트맵 핸들 복원
         SelectObject(hBitmapDC, hOldBitmap);

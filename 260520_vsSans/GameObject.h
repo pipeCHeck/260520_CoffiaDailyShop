@@ -95,6 +95,7 @@ public:
     GameObject(ObjectType type) : GameObjectBase(type) {}
     ~GameObject() override;
 
+    void ClearBitmapInfo();
     void AddBitmapInfo(BitmapInfo* bitmapInfo);
 
     void Update(float deltaTime) override;
