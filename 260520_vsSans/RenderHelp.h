@@ -39,9 +39,14 @@ namespace renderHelp
 		void SetParentImage(BitmapInfo* parent) { this->parentImage = parent; }
 
 		Transform& GetTransform() { return transform; }
+		Transform& GetAniTransform() { return aniTransform; }
+        Vector2f& GetPivot() { return pivot; }
 
+        Transform GetWorldTransform() const;
+        Vector2f RotateVector(Vector2f value, float degree) const;
 
 		String GetName() const { return name; }
+		BitmapInfo* GetParentImage() const { return parentImage; }
 
     private:
         friend struct WICInitializer;
@@ -68,7 +73,7 @@ namespace renderHelp
             this->frameColumns = frameCountX;
             this->frameRows = frameCountY;
             this->frameCount = frameCount;
-            this->transform.SetPosition(Vector2f(offsetX, offsetY));
+            this->pivot = Vector2f(offsetX, offsetY);
         }
 
         ~BitmapInfo()

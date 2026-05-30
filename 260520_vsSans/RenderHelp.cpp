@@ -1,6 +1,11 @@
 #include "RenderHelp.h"
+#include "Transform.h"
 #include <wincodec.h>
 #include <iostream>
+#include <math.h>
+
+using Vector2f = learning::Vector2f;
+using Transform = transform::Transform;
 
 #pragma comment(lib, "windowscodecs.lib")  // WIC 라이브러리
 #pragma comment(lib, "msimg32.lib")        // AlphaBlend 함수가 포함된 라이브러리
@@ -208,5 +213,43 @@ namespace renderHelp
         GWICInitializer.Clean();
 
         return pBitmapInfo;
+    }    
+    
+    Transform BitmapInfo::GetWorldTransform() const
+    {
+        Transform localTransform = transform + aniTransform;
+
+        if (parentImage == nullptr) {
+			return localTransform;
+        }
+
+        Transform parentWorldTransform = parentImage->GetWorldTransform();
+		Transform worldTransform;
+
+		// 부모의 크기가 자식의 위치에 영향을 미치도록 스케일링
+		Vector2f scaledLocalPos = localTransform.position * parentWorldTransform.scale;
+
+		// 부모의 회전이 자식의 위치에 영향을 미치도록 회전
+		Vector2f rotatedLocalPos = RotateVector(scaledLocalPos, parentWorldTransform.rotation);
+
+        // 최종 Transform 계산
+		worldTransform.position = parentWorldTransform.position + rotatedLocalPos;
+		worldTransform.rotation = parentWorldTransform.rotation + localTransform.rotation;
+		worldTransform.scale = parentWorldTransform.scale * localTransform.scale;
+
+        return worldTransform;
+    }
+
+    Vector2f BitmapInfo::RotateVector(Vector2f value, float degree) const
+    {
+        float rad = degree * 3.1415926535f / 180.0f;
+
+        float cosA = cosf(rad);
+        float sinA = sinf(rad);
+
+        return Vector2f(
+            value.x * cosA - value.y * sinA,
+            value.x * sinA + value.y * cosA
+        );
     }
 }

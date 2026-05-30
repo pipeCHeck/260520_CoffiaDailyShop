@@ -4,6 +4,7 @@
 #include "Collider.h"
 #include "GameObject.h"
 #include "RenderHelp.h"
+#include "CoffiaAnimationClips.h"
 #include <iostream>
 #include <assert.h>
 #include <vector>
@@ -280,7 +281,10 @@ void MyFirstWndGame::CreateCoffia()
     pNewObject->SetPosition(0.0f, 0.0f);    // 임의 설정
 	pNewObject->SetSpeed(0.0f); 
 
+    pNewObject->SetColliderCircle(50.0f);
 
+    // 이미지 설정
+    //
 }
 
 void MyFirstWndGame::CreatePlayer()
@@ -299,16 +303,25 @@ void MyFirstWndGame::CreatePlayer()
     image->SetName("Legs");
 	image->GetTransform().ModifyPosition(Vector2f(0,40)); // 다리 위치 조정
 
+    pNewObject->AddBitmapInfo(m_pSans_Head);
+    image = pNewObject->GetLastBitmapInfo();
+    image->SetName("Head");
+    pNewObject->GetBitmapInfo("Head")->GetTransform().SetRotation(120);
+	pNewObject->GetBitmapInfo("Head")->GetTransform().ModifyPosition(Vector2f(0, -40)); // 머리 위치 조정
+
     pNewObject->AddBitmapInfo(m_pSans_Torso);
 	image = pNewObject->GetLastBitmapInfo();
-	image->SetName("Torso") ;
-
-    pNewObject->AddBitmapInfo(m_pSans_Head);
-	image = pNewObject->GetLastBitmapInfo();
-	image->SetName("Head");
+	image->SetName("Torso");
+	//image->GetTransform().SetScale(Vector2f(2, 2)); // 몸통 크기 조정
+    image->SetParentImage(pNewObject->GetBitmapInfo("Head"));
 
     pNewObject->SetWidth(100);
     pNewObject->SetHeight(100);
+
+	// 애니메이터 설정
+	pNewObject->GetAnimator().SetOwner(pNewObject);
+	pNewObject->GetAnimator().AddAnimationClip(CoffiaAnimationClips::TestClip()); 
+    pNewObject->GetAnimator().SetCurrentClip("TestClip");
 
     m_GameObjectPtrTable[0] = pNewObject; // 첫번째 자리에 만든 객체 넣기
 }

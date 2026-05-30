@@ -1,5 +1,3 @@
-#include "INC_Windows.h"
-
 #include "Collider.h"
 #include "GameObject.h"
 #include "RenderHelp.h"
@@ -42,6 +40,8 @@ void GameObject::Update(float deltaTime)
     Move(deltaTime);
 
     UpdateFrame(deltaTime);
+
+    m_animator.Play(deltaTime);
 
     // Collider 업데이트
     // _콜라이더의 중심점 위치를 이동시킴 (구조체 변수인데, 도형 형태에 따라 둘중 하나만 있을 예정)
@@ -201,6 +201,14 @@ bool GameObject::IsCollidingWith(Vector2f pos) {
     }
 }
 
+double GameObject::GetRadius()
+{
+    if (m_pColliderCircle == nullptr)
+        return 0.0;
+
+    return m_pColliderCircle->radius;
+}
+
 learning::Vector2f GameObject::Rotate(learning::Vector2f dir, float angleOffset) {
 
     // 1도 돌리는데 사용할 라디안 값 (더 돌릴거면 1.0값을 바꾸면 됨)
@@ -218,18 +226,14 @@ learning::Vector2f GameObject::Rotate(learning::Vector2f dir, float angleOffset)
 void GameObject::DrawBitmap(HDC hdc)
 {
     if (m_pBitmapInfo.empty()) return;
-    if (m_pBitmapInfo[0] == nullptr) return;
 
     HDC hBitmapDC = CreateCompatibleDC(hdc);
 
     for (int i = 0; i < m_pBitmapInfo.size(); i++) {
 
+        if (m_pBitmapInfo[i] == nullptr) continue;
         if (m_pBitmapInfo[i]->GetBitmapHandle() == nullptr) continue;
-		if (!(m_pBitmapInfo[i]->GetActive())) continue;
-
-        //std::cout << "sansHead curFrame:" << m_pBitmapInfo[i]->GetCurFrame() << " / GetWidth: " << m_pBitmapInfo[i]->GetWidth() << std::endl;
-        //std::cout << "sansHead GetFrameCountX:" << m_pBitmapInfo[i]->GetFrameCountX() << " / GetWidth: " << m_pBitmapInfo[i]->GetFrameWidth() << std::endl;
-
+        if (!(m_pBitmapInfo[i]->GetActive())) continue;
 
         HBITMAP hOldBitmap = (HBITMAP)SelectObject(hBitmapDC, m_pBitmapInfo[i]->GetBitmapHandle());
 
@@ -239,20 +243,26 @@ void GameObject::DrawBitmap(HDC hdc)
         blend.SourceConstantAlpha = 255;  // 원본 알파 채널 그대로 사용
         blend.AlphaFormat = AC_SRC_ALPHA;
 
-        // 이미지의 위치값
-        //const int x = 0;
-        //const int y = 0;
+		// 이미지의 월드 Transform
+        Transform worldTransform = m_pBitmapInfo[i]->GetWorldTransform() + Transform{ m_pos, 0, Vector2f{1,1} };
 
+		// 이미지의 프레임 크기와 피벗 계산
+        Vector2f frameSize = m_pBitmapInfo[i]->GetFrameSize();
+        Vector2f pivot = m_pBitmapInfo[i]->GetPivot();
 
         // 이미지의 위치 계산
-		Vector2f imagePos = m_pos + m_pBitmapInfo[i]->GetTransform().position - Vector2f(m_pBitmapInfo[i]->GetFrameSize()) / 2.0f;
+        Vector2f imagePos = worldTransform.position - (frameSize / 2.0f + pivot) * worldTransform.scale;
 
-        // 이미지의 회전 계산
+		// 이미지의 실제 중심점 위치 계산 (회전의 중심점)
+		Vector2f pivotPos = worldTransform.position;
 
         // 이미지의 크기 계산
-		Vector2f frameSize = m_pBitmapInfo[i]->GetFrameSize();
-        
+		Vector2f drawSize = frameSize * worldTransform.scale;
 
+        // hdc 상태 저장 후 회전 계산
+        SaveDC(hdc);
+        SetGraphicsMode(hdc, GM_ADVANCED);
+        SetRotationTransform(hdc, worldTransform.rotation, pivotPos);
 
         // 시트 속 스프라이트 위치 계산
         Vector2f srcPos{
@@ -261,23 +271,40 @@ void GameObject::DrawBitmap(HDC hdc)
         };
 
 		// 시트 속 스프라이트 크기 계산 (보통은 프레임 크기와 같지만, 혹시나 해서)
-		Vector2f srcSize = m_pBitmapInfo[i]->GetFrameSize();
+		Vector2f srcSize = frameSize;
 
 		// hdc, 출력 위치, 크기, hBitmapDC, 원본 이미지의 시작 위치, 원본 이미지의 크기, 블렌드 함수
-        AlphaBlend(hdc, imagePos.x, imagePos.y, frameSize.x, frameSize.y, hBitmapDC, srcPos.x, srcPos.y, srcSize.x, srcSize.y, blend);
-
-        //std::cout << "sansHead xy:" << x << " / " << y << std::endl;
-        //std::cout << "sansHead m_widthm_height:" << m_width << " / " << m_height << std::endl;
-        //std::cout << "sansHead srcX:" << srcX << " / " << srcY << std::endl;
-        //std::cout << "sansHead m_pBitmapInfo:" << m_pBitmapInfo[i]->GetFrameWidth() << " / " << m_pBitmapInfo[i]->GetFrameHeight() << std::endl;
-        //std::cout << std::endl;
-
+        AlphaBlend(hdc, imagePos.x, imagePos.y, drawSize.x, drawSize.y, hBitmapDC, srcPos.x, srcPos.y, srcSize.x, srcSize.y, blend);
+        
+		// hdc 상태 복원(회전에 의해 설정한 것 돌리기)
+        RestoreDC(hdc, -1);
 
         // 비트맵 핸들 복원
         SelectObject(hBitmapDC, hOldBitmap);
     }
 
     DeleteDC(hBitmapDC);
+}
+
+void GameObject::SetRotationTransform(HDC hdc, float degree, Vector2f pivot)
+{
+    float rad = degree * 3.14159265f / 180.0f;
+
+    float cosA = cosf(rad);
+    float sinA = sinf(rad);
+
+	// 회전 변환 행렬 설정
+    XFORM xForm;
+
+    xForm.eM11 = cosA;
+    xForm.eM12 = sinA;
+    xForm.eM21 = -sinA;
+    xForm.eM22 = cosA;
+
+    xForm.eDx = pivot.x - cosA * pivot.x + sinA * pivot.y;
+    xForm.eDy = pivot.y - sinA * pivot.x - cosA * pivot.y;
+
+    SetWorldTransform(hdc, &xForm);
 }
 
 void GameObject::UpdateFrame(float deltaTime)

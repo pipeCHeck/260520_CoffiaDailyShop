@@ -1,5 +1,6 @@
 #pragma once
 
+#include "INC_Windows.h"
 #include "Utillity.h"
 #include "Transform.h"
 #include "Animation.h"
@@ -111,7 +112,7 @@ public:
     Vector2f TryGetCollisionDirection(Vector2f pos, float angleOffset) override;   // _실제 특정 객체와 위치 연산 후 충돌하지 않는 벡터 반환
     bool IsCollidingWith(Vector2f pos) override;    // _실제 충돌했는지 여부만 따지기
     bool IsAtDistanceFrom(Vector2f pos, float targetDistance, float& distanceToTarget) override;
-    double GetRadius() override { return m_pColliderCircle->radius; }
+    double GetRadius() override;
 
     void SetWidth(int w) { m_width = w; }
     void SetHeight(int h) { m_height = h; }
@@ -119,6 +120,8 @@ public:
     BitmapInfo* GetBitmapInfo(int index) { return m_pBitmapInfo[index]; }
     BitmapInfo* GetBitmapInfo(string name);
     BitmapInfo* GetLastBitmapInfo() { return m_pBitmapInfo[m_pBitmapInfo.size() - 1]; }
+
+	Animator& GetAnimator() { return m_animator; }
 
 protected: 
 	Transform transform;    // _위치, 회전, 크기 정보
@@ -135,6 +138,7 @@ protected:
     Vector2f Rotate(Vector2f dir, float angleOffset);  // _방향 벡터를 받아 회전시키기
 
     void DrawBitmap(HDC hdc);
+	void SetRotationTransform(HDC hdc, float degree, Vector2f pivot);
     void UpdateFrame(float deltaTime);
 
     int m_width = 0;
