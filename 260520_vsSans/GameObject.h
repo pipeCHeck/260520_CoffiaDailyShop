@@ -2,6 +2,7 @@
 
 #include "Utillity.h"
 #include "Transform.h"
+#include "Animation.h"
 #include <algorithm>
 #include <vector>
 using namespace std;
@@ -20,6 +21,9 @@ enum class ObjectType
     BULLET,
     ITEM,
     BACKGROUND,
+
+    BUTTON,
+
 };
 
 namespace renderHelp
@@ -112,8 +116,18 @@ public:
     void SetWidth(int w) { m_width = w; }
     void SetHeight(int h) { m_height = h; }
 
+    BitmapInfo* GetBitmapInfo(int index) { return m_pBitmapInfo[index]; }
+    BitmapInfo* GetBitmapInfo(string name);
+    BitmapInfo* GetLastBitmapInfo() { return m_pBitmapInfo[m_pBitmapInfo.size() - 1]; }
+
 protected: 
-    Transform transform;
+	Transform transform;    // _위치, 회전, 크기 정보
+
+    // Bitmap 정보
+    vector<BitmapInfo*> m_pBitmapInfo = {};
+
+    // 애니메이션
+    Animator m_animator;
 
     void DrawCollider(HDC hdc, COLORREF color);
 
@@ -122,10 +136,6 @@ protected:
 
     void DrawBitmap(HDC hdc);
     void UpdateFrame(float deltaTime);
-
-    // Bitmap 정보
-    //BitmapInfo* m_pBitmapInfo = nullptr;
-    vector<BitmapInfo*> m_pBitmapInfo = {};
 
     int m_width = 0;
     int m_height = 0;

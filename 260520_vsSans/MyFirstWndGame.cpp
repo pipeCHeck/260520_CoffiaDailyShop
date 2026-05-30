@@ -79,9 +79,9 @@ bool MyFirstWndGame::Initialize()
     m_pAttack_Slash = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/Attack_Slash.png", 6, 1, 6);
     m_pUI_Box = renderHelp::CreateBitmapInfo(L"./Resource/Sprites/Battle/UI/UI_Box.png");
 
-    std::cout << "Debuggggg" << std::endl;
-    std::cout << "sansHead curFrame:" << m_pSans_Head->GetCurFrame() << " / GetWidth: " << m_pSans_Head->GetWidth() << std::endl;
-    std::cout << "sansHead GetFrameCountX:" << m_pSans_Head->GetFrameCountX() << " / GetWidth: " << m_pSans_Head->GetFrameWidth() << std::endl;
+    //std::cout << "Debuggggg" << std::endl;
+    //std::cout << "sansHead curFrame:" << m_pSans_Head->GetCurFrame() << " / GetWidth: " << m_pSans_Head->GetWidth() << std::endl;
+    //std::cout << "sansHead GetFrameCountX:" << m_pSans_Head->GetFrameCountX() << " / GetWidth: " << m_pSans_Head->GetFrameWidth() << std::endl;
 
 #pragma endregion
 
@@ -89,69 +89,69 @@ bool MyFirstWndGame::Initialize()
 #pragma region keyFunc
 
     // Z 키 입력 시
-    OnKeyDown['Z'] = []() {
+    OnKeyDown['Z'] = [](int, int) {
         std::cout << "Z down" << std::endl;
         };
     OnKey['Z'] = []() {
         std::cout << "Z";
         };
-    OnKeyUp['Z'] = []() {
+    OnKeyUp['Z'] = [](int, int) {
         std::cout << std::endl << "Z up" << std::endl;
         };
 
     // X 키 입력 시
-    OnKeyDown['X'] = []() {
+    OnKeyDown['X'] = [](int, int) {
         std::cout << "X down" << std::endl;
         };
     OnKey['X'] = []() {
         std::cout << "X";
         };
-    OnKeyUp['X'] = []() {
+    OnKeyUp['X'] = [](int, int) {
         std::cout << std::endl << "X up" << std::endl;
         };
 
 
     // VK_UP 키 입력 시
-    OnKeyDown[VK_UP] = []() {
+    OnKeyDown[VK_UP] = [](int, int) {
         std::cout << "VK_UP down" << std::endl;
         };
     OnKey[VK_UP] = []() {
         std::cout << "VK_UP ";
         };
-    OnKeyUp[VK_UP] = []() {
+    OnKeyUp[VK_UP] = [](int, int) {
         std::cout << std::endl << "VK_UP up" << std::endl;
         };
 
     // VK_DOWN 키 입력 시
-    OnKeyDown[VK_DOWN] = []() {
+    OnKeyDown[VK_DOWN] = [](int, int) {
         std::cout << "VK_DOWN down" << std::endl;
         };
     OnKey[VK_DOWN] = []() {
         std::cout << "VK_DOWN ";
         };
-    OnKeyUp[VK_DOWN] = []() {
+    OnKeyUp[VK_DOWN] = [](int, int) {
         std::cout << std::endl << "VK_DOWN up" << std::endl;
         };
 
     // VK_LEFT 키 입력 시
-    OnKeyDown[VK_LEFT] = []() {
+    OnKeyDown[VK_LEFT] = [](int, int) {
         std::cout << "VK_LEFT down" << std::endl;
         };
     OnKey[VK_LEFT] = []() {
         std::cout << "VK_LEFT ";
         };
-    OnKeyUp[VK_LEFT] = []() {
+    OnKeyUp[VK_LEFT] = [](int, int) {
         std::cout << std::endl << "VK_LEFT up" << std::endl;
         };
 
     // VK_RIGHT 키 입력 시
-    OnKeyDown[VK_RIGHT] = []() {
+    OnKeyDown[VK_RIGHT] = [](int, int) {
         std::cout << "VK_RIGHT down" << std::endl;
         };
     OnKey[VK_RIGHT] = []() {
         std::cout << "VK_RIGHT ";
         };
-    OnKeyUp[VK_RIGHT] = []() {
+    OnKeyUp[VK_RIGHT] = [](int, int) {
         std::cout << std::endl << "VK_RIGHT up" << std::endl;
         };
 
@@ -174,32 +174,23 @@ void MyFirstWndGame::Run()
         // 몬가 입력이 있다면 msg에 들어감
         if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) // _메시지 확인할 곳, 어떤 메시지(nullptr은 모두), 모든 범위, 확인하고 확인한 메시지는 지울것.
         {
+            //
             if (msg.wParam < 256) {
                 bool hasKeyEvent = (OnKey[msg.wParam] || OnKeyDown[msg.wParam] || OnKeyUp[msg.wParam]);
 
                 if (msg.message == WM_KEYDOWN && hasKeyEvent) {
                     if (!keys[msg.wParam] && OnKeyDown[msg.wParam]) {
-                        OnKeyDown[msg.wParam]();
+                        OnKeyDown[msg.wParam](LOWORD(msg.lParam), HIWORD(msg.lParam));
                     }
                     keys[msg.wParam] = true;
                 }
                 else if (msg.message == WM_KEYUP && hasKeyEvent) {
                     if (OnKeyUp[msg.wParam])
-                        OnKeyUp[msg.wParam]();
+                        OnKeyUp[msg.wParam](LOWORD(msg.lParam), HIWORD(msg.lParam));
                     keys[msg.wParam] = false;
                 }
             }
-
-
-            /*
-            if (msg.message == WM_KEYDOWN)
-            {
-                keys[msg.wParam] = true;
-            }
-            else if (msg.message == WM_KEYUP) {
-                keys[msg.wParam] = false;
-            }*/
-
+            
             if (msg.message == WM_LBUTTONDOWN)  // _좌버튼클릭
             {
                 MyFirstWndGame::OnLButtonDown(LOWORD(msg.lParam), HIWORD(msg.lParam)); // _lParam은 그냥 롱롱 변수지만 상하위 비트에 나눠서 x,y값을 저장해놓는거라, 그걸 분리해서 xy값을 각각 인자로 전달하는 거.
@@ -212,6 +203,7 @@ void MyFirstWndGame::Run()
             {
                 MyFirstWndGame::OnMouseMove(LOWORD(msg.lParam), HIWORD(msg.lParam));
             }
+
             else    // _암것도 아니라면(내가 원하는 종류의 입력이 아니니까, 윈도우 니가 알아서 받아먹어라~ 하고 던져줌)
             {
                 TranslateMessage(&msg); // _윈도우 프로시저가 알아먹는 메시지로 바꿔서(새로 생성해서..) 
@@ -279,6 +271,18 @@ void MyFirstWndGame::LogicUpdate()
     }
 }
 
+// 커피아 생성
+void MyFirstWndGame::CreateCoffia() 
+{
+    GameObject* pNewObject = new GameObject(ObjectType::BUTTON);
+
+	pNewObject->SetName("Coffia");          // 이름 설정
+    pNewObject->SetPosition(0.0f, 0.0f);    // 임의 설정
+	pNewObject->SetSpeed(0.0f); 
+
+
+}
+
 void MyFirstWndGame::CreatePlayer()
 {
     assert(m_GameObjectPtrTable[0] == nullptr && "Player object already exists!");  // _첫 인자가 거짓이면 에러
@@ -291,8 +295,17 @@ void MyFirstWndGame::CreatePlayer()
 
     pNewObject->SetColliderCircle(50.0f); // 일단, 임의로 설정. 오브젝트 설정할 거 다 하고 나서 하자.
     pNewObject->AddBitmapInfo(m_pSans_Legs_01);
+    BitmapInfo* image = pNewObject->GetLastBitmapInfo();
+    image->SetName("Legs");
+	image->GetTransform().ModifyPosition(Vector2f(0,40)); // 다리 위치 조정
+
     pNewObject->AddBitmapInfo(m_pSans_Torso);
+	image = pNewObject->GetLastBitmapInfo();
+	image->SetName("Torso") ;
+
     pNewObject->AddBitmapInfo(m_pSans_Head);
+	image = pNewObject->GetLastBitmapInfo();
+	image->SetName("Head");
 
     pNewObject->SetWidth(100);
     pNewObject->SetHeight(100);

@@ -1,34 +1,47 @@
 #pragma once
 #include "INC_Windows.h"
+#include "Transform.h"
+#include <string>
 
 namespace renderHelp
 {
     struct WICInitializer;
     class BitmapInfo
     {
+        using Vector2f = learning::Vector2f;
+        using Transform = transform::Transform;
+        using String = std::string;
     public:
         HBITMAP GetBitmapHandle() const { return m_hBitmap; }
         
         // 전체 이미지의 크기 반환
-        int GetWidth() const { return m_width; }
-        int GetHeight() const { return m_height; }
+        int GetSheetWidth() const { return m_sheetWidth; }
+        int GetSheetHeight() const { return m_sheetHeight; }
 
         // 스프라이트 한 칸의 크기 반환
-        int GetFrameWidth() const { return m_width / frameCountX; }
-        int GetFrameHeight() const { return m_height / frameCountY; }
+		Vector2f GetFrameSize() const { return Vector2f(GetFrameWidth(), GetFrameHeight()); }
+        int GetFrameWidth() const { return m_sheetWidth / frameColumns; }
+        int GetFrameHeight() const { return m_sheetHeight / frameRows; }
 
         // 스프라이트 갯수 반환
-        int GetFrameCountX() const { return frameCountX; }
-        int GetFrameCountY() const { return frameCountY; }
+        int GetFrameColumns() const { return frameColumns; }
+        int GetFrameRows() const { return frameRows; }
         int GetFrameCount() const { return frameCount; }
-
-        // 스프라이트의 이미지 오프셋 반환
-        int GetOffsetX() const { return offsetX; }
-        int GetOffsetY() const { return offsetY; }
 
         // 현재 사용할 스프라이트 인덱스 반환
         int GetCurFrame() { return curFrame; }
         void SetCurFrame(int index);
+
+		bool GetActive() const { return active; }
+        void SetActive(bool active) { this->active = active; }
+
+		void SetName(String name) { this->name = name; }
+		void SetParentImage(BitmapInfo* parent) { this->parentImage = parent; }
+
+		Transform& GetTransform() { return transform; }
+
+
+		String GetName() const { return name; }
 
     private:
         friend struct WICInitializer;
@@ -40,8 +53,8 @@ namespace renderHelp
             m_hBitmap = hBitmap;
             BITMAP bitmap;
             GetObject(hBitmap, sizeof(BITMAP), &bitmap);
-            m_width = bitmap.bmWidth;
-            m_height = bitmap.bmHeight;
+            m_sheetWidth = bitmap.bmWidth;
+            m_sheetHeight = bitmap.bmHeight;
         }
 
         BitmapInfo(HBITMAP hBitmap, int frameCountX, int frameCountY, int frameCount = 1, int offsetX = 0, int offsetY = 0)
@@ -49,14 +62,13 @@ namespace renderHelp
             m_hBitmap = hBitmap;
             BITMAP bitmap;
             GetObject(hBitmap, sizeof(BITMAP), &bitmap);
-            m_width = bitmap.bmWidth;
-            m_height = bitmap.bmHeight;
+            m_sheetWidth = bitmap.bmWidth;
+            m_sheetHeight = bitmap.bmHeight;
 
-            this->frameCountX = frameCountX;
-            this->frameCountY = frameCountY;
+            this->frameColumns = frameCountX;
+            this->frameRows = frameCountY;
             this->frameCount = frameCount;
-            this->offsetX = offsetX;
-            this->offsetY = offsetY;
+            this->transform.SetPosition(Vector2f(offsetX, offsetY));
         }
 
         ~BitmapInfo()
@@ -69,27 +81,27 @@ namespace renderHelp
         }
 
     private:
-        // 실제 이미지 비트맵
-        HBITMAP m_hBitmap = nullptr;
 
-        // 전체 이미지의 크기
-        int m_width = 0;
-        int m_height = 0;
+        HBITMAP m_hBitmap = nullptr;        // 실제 이미지 비트맵
+        BitmapInfo* parentImage = nullptr;  // 부모 비트맵 
 
-        // 이미지 속 스프라이트의 갯수
-        int frameCountX = 1;
-        int frameCountY = 1;
+		Transform transform;        // _위치, 회전, 크기 정보
+		Transform aniTransform;     // _애니메이션 위치, 회전, 크기 정보
+		Transform parTransform;     // _부모 위치, 회전, 크기 정보
+        Vector2f pivot = { 0.0f, 0.0f };   // 이미지의 피벗 위치(0,0 이 중앙)
+
+		String name;        // 검색 위해 사용되는 키값
+        int curFrame = 0;   // 현재 이미지 프레임 값
+		bool active = true; // 이미지 활성화 여부 (false면 렌더 스킵)
+
+        // 스프라이트 시트의 크기
+        int m_sheetWidth = 0;
+        int m_sheetHeight = 0;
+
+        // 시트 속 스프라이트의 갯수
+        int frameColumns = 1;
+        int frameRows = 1;
         int frameCount = 1;
-
-        // 이미지 하나의 위치 오프셋
-        int offsetX = 0;
-        int offsetY = 0;
-
-        // 이미지 z위치값(앞으로 나올지 뒤로 갈지)
-        int indexZ = 0;
-
-        // 현재 이미지 프레임 값
-        int curFrame = 0;
 
         BitmapInfo(const BitmapInfo&) = delete;
         BitmapInfo& operator=(const BitmapInfo&) = delete;

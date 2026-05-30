@@ -5,6 +5,7 @@
 #include "RenderHelp.h"
 #include <assert.h>
 #include <iostream>
+using BitmapInfo = renderHelp::BitmapInfo;
 
 GameObject::~GameObject()
 {
@@ -224,9 +225,10 @@ void GameObject::DrawBitmap(HDC hdc)
     for (int i = 0; i < m_pBitmapInfo.size(); i++) {
 
         if (m_pBitmapInfo[i]->GetBitmapHandle() == nullptr) continue;
+		if (!(m_pBitmapInfo[i]->GetActive())) continue;
 
-        std::cout << "sansHead curFrame:" << m_pBitmapInfo[i]->GetCurFrame() << " / GetWidth: " << m_pBitmapInfo[i]->GetWidth() << std::endl;
-        std::cout << "sansHead GetFrameCountX:" << m_pBitmapInfo[i]->GetFrameCountX() << " / GetWidth: " << m_pBitmapInfo[i]->GetFrameWidth() << std::endl;
+        //std::cout << "sansHead curFrame:" << m_pBitmapInfo[i]->GetCurFrame() << " / GetWidth: " << m_pBitmapInfo[i]->GetWidth() << std::endl;
+        //std::cout << "sansHead GetFrameCountX:" << m_pBitmapInfo[i]->GetFrameCountX() << " / GetWidth: " << m_pBitmapInfo[i]->GetFrameWidth() << std::endl;
 
 
         HBITMAP hOldBitmap = (HBITMAP)SelectObject(hBitmapDC, m_pBitmapInfo[i]->GetBitmapHandle());
@@ -241,26 +243,34 @@ void GameObject::DrawBitmap(HDC hdc)
         //const int x = 0;
         //const int y = 0;
 
-        int spriteSizeX = m_pBitmapInfo[i]->GetFrameWidth() * 2;
-        int spriteSizeY = m_pBitmapInfo[i]->GetFrameHeight() * 2;
 
-        const int x = m_pos.x - (spriteSizeX /2);
-        const int y = m_pos.y - (spriteSizeY /2);
+        // 이미지의 위치 계산
+		Vector2f imagePos = m_pos + m_pBitmapInfo[i]->GetTransform().position - Vector2f(m_pBitmapInfo[i]->GetFrameSize()) / 2.0f;
+
+        // 이미지의 회전 계산
+
+        // 이미지의 크기 계산
+		Vector2f frameSize = m_pBitmapInfo[i]->GetFrameSize();
         
-        // 시작 점
-        const int srcX = 
-            ((m_pBitmapInfo[i]->GetCurFrame() % m_pBitmapInfo[i]->GetFrameCountY())) * m_pBitmapInfo[i]->GetFrameWidth();
-        const int srcY = 
-            ((m_pBitmapInfo[i]->GetCurFrame() / m_pBitmapInfo[i]->GetFrameCountY())) * m_pBitmapInfo[i]->GetFrameHeight();
 
-        AlphaBlend(hdc, x + m_pBitmapInfo[i]->GetOffsetX(), y + m_pBitmapInfo[i]->GetOffsetY(), spriteSizeX, spriteSizeY,
-            hBitmapDC, srcX, srcY, m_pBitmapInfo[i]->GetFrameWidth(), m_pBitmapInfo[i]->GetFrameHeight(), blend);
 
-        std::cout << "sansHead xy:" << x << " / " << y << std::endl;
-        std::cout << "sansHead m_widthm_height:" << m_width << " / " << m_height << std::endl;
-        std::cout << "sansHead srcX:" << srcX << " / " << srcY << std::endl;
-        std::cout << "sansHead m_pBitmapInfo:" << m_pBitmapInfo[i]->GetFrameWidth() << " / " << m_pBitmapInfo[i]->GetFrameHeight() << std::endl;
-        std::cout << std::endl;
+        // 시트 속 스프라이트 위치 계산
+        Vector2f srcPos{
+            m_pBitmapInfo[i]->GetCurFrame() % m_pBitmapInfo[i]->GetFrameColumns() * (float)m_pBitmapInfo[i]->GetFrameWidth(),
+            m_pBitmapInfo[i]->GetCurFrame() / m_pBitmapInfo[i]->GetFrameColumns() * (float)m_pBitmapInfo[i]->GetFrameHeight()
+        };
+
+		// 시트 속 스프라이트 크기 계산 (보통은 프레임 크기와 같지만, 혹시나 해서)
+		Vector2f srcSize = m_pBitmapInfo[i]->GetFrameSize();
+
+		// hdc, 출력 위치, 크기, hBitmapDC, 원본 이미지의 시작 위치, 원본 이미지의 크기, 블렌드 함수
+        AlphaBlend(hdc, imagePos.x, imagePos.y, frameSize.x, frameSize.y, hBitmapDC, srcPos.x, srcPos.y, srcSize.x, srcSize.y, blend);
+
+        //std::cout << "sansHead xy:" << x << " / " << y << std::endl;
+        //std::cout << "sansHead m_widthm_height:" << m_width << " / " << m_height << std::endl;
+        //std::cout << "sansHead srcX:" << srcX << " / " << srcY << std::endl;
+        //std::cout << "sansHead m_pBitmapInfo:" << m_pBitmapInfo[i]->GetFrameWidth() << " / " << m_pBitmapInfo[i]->GetFrameHeight() << std::endl;
+        //std::cout << std::endl;
 
 
         // 비트맵 핸들 복원
@@ -297,4 +307,13 @@ bool GameObject::IsAtDistanceFrom(Vector2f pos, float targetDistance, float& dis
 
     distanceToTarget = distance;    // _실제 거리 반환
     return (minDist <= distance && distance <= maxDist);    // _기준선에 충돌하는 오브젝트라면 true
+}
+
+BitmapInfo* GameObject::GetBitmapInfo(string name) {
+    for (int i = 0; i < m_pBitmapInfo.size(); i++) {
+        if (m_pBitmapInfo[i]->GetName() == name) {
+            return m_pBitmapInfo[i];
+        }
+    }
+    return nullptr;
 }

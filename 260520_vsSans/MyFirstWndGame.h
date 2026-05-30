@@ -90,6 +90,7 @@ private:
 
     void CreatePlayer();
     void CreateEnemy();
+    void CreateCoffia();
 
     void UpdatePlayerInfo();
 	void UpdateEnemyInfo(int index, float deltaTime);
@@ -135,6 +136,6 @@ private:
     bool keys[256] = {};    // 특정 키가 눌려있는지 확인
     
     std::function<void()> OnKey[256];       // 키가 눌릴때 나올 메서드
-    std::function<void()> OnKeyDown[256];   // 키가 딱 눌린 순간에만 나올 메서드
-    std::function<void()> OnKeyUp[256];   // 키가 딱 눌린 순간에만 나올 메서드
+    std::function<void(int, int)> OnKeyDown[256];   // 키가 딱 눌린 순간에만 나올 메서드
+    std::function<void(int, int)> OnKeyUp[256];   // 키가 딱 눌린 순간에만 나올 메서드
 };
