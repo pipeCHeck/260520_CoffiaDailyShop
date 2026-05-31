@@ -29,8 +29,12 @@ clip.MakeRotationKeyFrame(110, "ArmL", -123, 40, EaseType::EaseInOut)
 코드만 보고 애니메이팅을 하는 것도 물론 가능하지만 매우 어렵기 때문에.. 
 에프터 이펙트에서 애니메이션 작업을 한 뒤, 키 프레임을 코드 형태로 변환하는 파이썬 프로그램을 첨부하였다.
 
-### 에프터 이펙트(上) <-> GDI 내 키프레임 애니메이션(下)
-<img width="853" height="480" alt="Image" src="https://github.com/user-attachments/assets/e1b23fe6-3ede-4312-a3a7-e4acb9f1536a" />
-<img width="853" height="611" alt="Image" src="https://github.com/user-attachments/assets/b8bad2b4-55ac-4269-a65f-63e3b20774a5" />
+### 오브젝트 내 이미지 간의 구조 구현(트랜스폼, 피벗, 계층 구조, 보간 모두 적용 예시)
+<img width="720" height="475" alt="Image" src="https://github.com/user-attachments/assets/5310e5bb-79ea-40c5-912c-49f67d699ca8" />
+
+### 에프터 이펙트(上, 中) <-> GDI 내 키프레임 애니메이션(下)
+<img width="720" height="405" alt="Image" src="https://github.com/user-attachments/assets/e1b23fe6-3ede-4312-a3a7-e4acb9f1536a" />
+<img width="720" height="450" alt="Image" src="https://github.com/user-attachments/assets/e45a7fe4-0b55-49ff-9f1e-1edbc1f5f7b4" />
+<img width="720" height="530" alt="Image" src="https://github.com/user-attachments/assets/b8bad2b4-55ac-4269-a65f-63e3b20774a5" />
 
 C++ assignment project - VS Sans battle implementation
