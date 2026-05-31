@@ -120,7 +120,10 @@ public:
     BitmapInfo* m_pEffect_Line = nullptr;
 
 	// m_pNull 이 앞에 붙은 객체는 이미지 없는 컨트롤러 객체
+    BitmapInfo* m_pNull_All = nullptr;
     BitmapInfo* m_pNull_Hair = nullptr;
+    BitmapInfo* m_pNull_EyeL = nullptr;
+    BitmapInfo* m_pNull_EyeR = nullptr;
 
 #pragma endregion
 
@@ -137,11 +140,6 @@ private:
 
     void OnZKeyDown();
     void OnXKeyDown();
-
-    void OnUpKeyDown();
-    void OnDownKeyDown();
-    void OnLeftKeyDown();
-    void OnRightKeyDown();
 
     bool IsValidSpawnPosition(learning::Vector2f pos, int selfCheck = -1);
 

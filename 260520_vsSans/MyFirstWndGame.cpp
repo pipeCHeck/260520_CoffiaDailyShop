@@ -142,7 +142,10 @@ bool MyFirstWndGame::Initialize()
     m_pHandL_Line = renderHelp::CreateBitmapInfo(L"./Resource/Coffia/HandL.png", 2, 2, 4);
     m_pEffect_Line = renderHelp::CreateBitmapInfo(L"./Resource/Coffia/Effects.png", 2, 3, 6);
 
+    m_pNull_All = renderHelp::CreateBitmapInfo(L"./Resource/NullObject.png");
     m_pNull_Hair = renderHelp::CreateBitmapInfo(L"./Resource/NullObject.png");
+    m_pNull_EyeL = renderHelp::CreateBitmapInfo(L"./Resource/NullObject.png");
+    m_pNull_EyeR = renderHelp::CreateBitmapInfo(L"./Resource/NullObject.png");
 
 
     //std::cout << "Debuggggg" << std::endl;
@@ -226,7 +229,9 @@ bool MyFirstWndGame::Initialize()
 
 
     // [CHECK]. 첫 번째 게임 오브젝트는 플레이어 캐릭터로 고정!
-    CreatePlayer(); // _0번 인덱스에 플레이어 원 객체 넣기
+    CreateBackground();
+    CreatePlayer();
+    CreateTable();
 
     return true;
 
@@ -324,27 +329,83 @@ void MyFirstWndGame::LogicUpdate()
         }
     }
 
-    UpdatePlayerInfo();
+    //UpdatePlayerInfo();
 
     // 각 오브젝트를 다 체크해서 업데이트하기
     for (int i = 0; i < MAX_GAME_OBJECT_COUNT; ++i)
     {
         if (m_GameObjectPtrTable[i])    // 오브젝트 테이블에 있는 오브젝트들 싹다 검사
         {
-			UpdateEnemyInfo(i, m_fDeltaTime);   // 적 정보 업데이트
+			//UpdateEnemyInfo(i, m_fDeltaTime);   // 적 정보 업데이트
             m_GameObjectPtrTable[i]->Update(m_fDeltaTime);  // 이번 프레임의 델타타임 넘거주기
         }
     }
 }
 
-void MyFirstWndGame::CreateBackground() 
+void MyFirstWndGame::CreateBackground()
 {
     GameObject* pNewObject = new GameObject(ObjectType::BACKGROUND);
     pNewObject->SetName("Background");
     pNewObject->SetPosition(0.0f, 0.0f);
     pNewObject->SetSpeed(0.0f);
+
+	// 이미지 설정
+    BitmapInfo* image = nullptr;
+    
+    pNewObject->AddBitmapInfo(m_pBg_Shop);
+    image = pNewObject->GetLastBitmapInfo();
+    image->SetName("Background");
+    image->GetTransform().SetPosition(Vector2f(720, 450));
+
+    int i = 0;
+    while (++i < MAX_GAME_OBJECT_COUNT) //0번째는 언제나 플레이어!
+    {
+        if (nullptr == m_GameObjectPtrTable[i])
+        {
+            m_GameObjectPtrTable[i] = pNewObject;
+            break;
+        }
+    }
+
+    if (i == MAX_GAME_OBJECT_COUNT)
+    {
+        // 게임 오브젝트 테이블이 가득 찼습니다.
+        delete pNewObject;
+        pNewObject = nullptr;
+    }
+}
+
+void MyFirstWndGame::CreateTable()
+{
+    GameObject* pNewObject = new GameObject(ObjectType::BACKGROUND);
+    pNewObject->SetName("Table");
+    pNewObject->SetPosition(0.0f, 0.0f);
+    pNewObject->SetSpeed(0.0f);
+
     // 이미지 설정
-    //
+    BitmapInfo* image = nullptr;
+
+    pNewObject->AddBitmapInfo(m_pTable);
+    image = pNewObject->GetLastBitmapInfo();
+    image->SetName("Table");
+    image->GetTransform().SetPosition(Vector2f(720, 800));
+
+    int i = 0;
+    while (++i < MAX_GAME_OBJECT_COUNT) //0번째는 언제나 플레이어!
+    {
+        if (nullptr == m_GameObjectPtrTable[i])
+        {
+            m_GameObjectPtrTable[i] = pNewObject;
+            break;
+        }
+    }
+
+    if (i == MAX_GAME_OBJECT_COUNT)
+    {
+        // 게임 오브젝트 테이블이 가득 찼습니다.
+        delete pNewObject;
+        pNewObject = nullptr;
+    }
 }
 
 
@@ -373,7 +434,8 @@ void MyFirstWndGame::CreatePlayer()
     pNewObject->SetPosition(0.0f, 0.0f); // 일단, 임의로 설정 // _m_pos에 값 저장
     pNewObject->SetSpeed(0.8f); // 일단, 임의로 설정   // _m_speed에 값 저장
 
-    pNewObject->SetColliderCircle(50.0f); // 일단, 임의로 설정. 오브젝트 설정할 거 다 하고 나서 하자.
+    //pNewObject->SetColliderCircle(50.0f); // 일단, 임의로 설정. 오브젝트 설정할 거 다 하고 나서 하자.
+	pNewObject->SetPosition(700.0f, 550.0f); // 일단, 임의로 설정
     pNewObject->SetWidth(100);
     pNewObject->SetHeight(100);
 
@@ -384,8 +446,9 @@ void MyFirstWndGame::CreatePlayer()
     pNewObject->AddBitmapInfo(m_pEffects);
     image = pNewObject->GetLastBitmapInfo();
     image->SetName("Effect");
-    image->GetTransform().SetPosition(Vector2f(145, -403));
+    image->GetTransform().SetPosition(Vector2f(145, -623));
     image->SetCurFrame(2);;
+    image->SetActive(false); 
 
     pNewObject->AddBitmapInfo(m_pArmL);
     image = pNewObject->GetLastBitmapInfo();
@@ -398,6 +461,7 @@ void MyFirstWndGame::CreatePlayer()
     image->SetName("HandL");
     image->GetTransform().SetPosition(Vector2f(100, -207));
     image->GetPivot() = Vector2f(-12, 70);
+    //image->SetActive(false);
 
     pNewObject->AddBitmapInfo(m_pEyeR_Brow);
     image = pNewObject->GetLastBitmapInfo();
@@ -417,7 +481,7 @@ void MyFirstWndGame::CreatePlayer()
     pNewObject->AddBitmapInfo(m_pEyeR_White);
     image = pNewObject->GetLastBitmapInfo();
     image->SetName("EyeR_White");
-    image->GetTransform().SetPosition(Vector2f(80, -20));
+    image->GetTransform().SetPosition(Vector2f(0, 0));
 
     pNewObject->AddBitmapInfo(m_pEyeL_Brow);
     image = pNewObject->GetLastBitmapInfo();
@@ -437,7 +501,7 @@ void MyFirstWndGame::CreatePlayer()
     pNewObject->AddBitmapInfo(m_pEyeL_White);
     image = pNewObject->GetLastBitmapInfo();
     image->SetName("EyeL_White");
-    image->GetTransform().SetPosition(Vector2f(-80, -20));
+    image->GetTransform().SetPosition(Vector2f(0, 0));
 
     pNewObject->AddBitmapInfo(m_pMouth);
     image = pNewObject->GetLastBitmapInfo();
@@ -729,37 +793,64 @@ void MyFirstWndGame::CreatePlayer()
     image->GetTransform().SetPosition(Vector2f(0, 0));
     image->SetCurFrame(1);
     image->SetParentImage(pNewObject->GetBitmapInfo("Effect"));
+    image->SetActive(false);
 
 
 
     // 널(컨트롤러) 객체
+    pNewObject->AddBitmapInfo(m_pNull_All);
+    image = pNewObject->GetLastBitmapInfo();
+    image->SetName("Null_All");
+    image->GetTransform().SetPosition(Vector2f(0, 0));
+    image->SetActive(false); // 널 객체는 보이지 않게 설정
+
     pNewObject->AddBitmapInfo(m_pNull_Hair);
     image = pNewObject->GetLastBitmapInfo();
     image->SetName("Null_Hair");
     image->GetTransform().SetPosition(Vector2f(0, -300));
-	image->SetActive(false); // 널 객체는 보이지 않게 설정
+    image->SetActive(false); // 널 객체는 보이지 않게 설정
+
+    pNewObject->AddBitmapInfo(m_pNull_EyeL);
+    image = pNewObject->GetLastBitmapInfo();
+    image->SetName("Null_EyeL");
+    image->GetTransform().SetPosition(Vector2f(-80, -20));
+    image->SetActive(false); // 널 객체는 보이지 않게 설정
+
+    pNewObject->AddBitmapInfo(m_pNull_EyeR);
+    image = pNewObject->GetLastBitmapInfo();
+    image->SetName("Null_EyeR");
+    image->GetTransform().SetPosition(Vector2f(80, -20));
+    image->SetActive(false); // 널 객체는 보이지 않게 설정
 
 
 
 	// 부모-자식 관계 설정
+    pNewObject->GetBitmapInfo("Body")->SetParentImage(pNewObject->GetBitmapInfo("Null_All"));
+    pNewObject->GetBitmapInfo("ArmL")->SetParentImage(pNewObject->GetBitmapInfo("Null_All"));
+
     pNewObject->GetBitmapInfo("Face")->SetParentImage(pNewObject->GetBitmapInfo("Body"));
     pNewObject->GetBitmapInfo("Body_ArmL")->SetParentImage(pNewObject->GetBitmapInfo("Body"));
     pNewObject->GetBitmapInfo("Body_ArmR")->SetParentImage(pNewObject->GetBitmapInfo("Body"));
+    pNewObject->GetBitmapInfo("Effect")->SetParentImage(pNewObject->GetBitmapInfo("Body"));
 
     pNewObject->GetBitmapInfo("Nose")->SetParentImage(pNewObject->GetBitmapInfo("Face"));
     pNewObject->GetBitmapInfo("Null_Hair")->SetParentImage(pNewObject->GetBitmapInfo("Face"));
 
-    pNewObject->GetBitmapInfo("EyeL_White")->SetParentImage(pNewObject->GetBitmapInfo("Nose"));
-    pNewObject->GetBitmapInfo("EyeR_White")->SetParentImage(pNewObject->GetBitmapInfo("Nose"));
+    pNewObject->GetBitmapInfo("Null_EyeL")->SetParentImage(pNewObject->GetBitmapInfo("Nose"));
+    pNewObject->GetBitmapInfo("Null_EyeR")->SetParentImage(pNewObject->GetBitmapInfo("Nose"));
     pNewObject->GetBitmapInfo("Mouth")->SetParentImage(pNewObject->GetBitmapInfo("Nose"));
 
-    pNewObject->GetBitmapInfo("EyeL_Brow")->SetParentImage(pNewObject->GetBitmapInfo("EyeL_White"));
-    pNewObject->GetBitmapInfo("EyeL_Lid")->SetParentImage(pNewObject->GetBitmapInfo("EyeL_White"));
     pNewObject->GetBitmapInfo("EyeL_Pupil")->SetParentImage(pNewObject->GetBitmapInfo("EyeL_White"));
 
-    pNewObject->GetBitmapInfo("EyeR_Brow")->SetParentImage(pNewObject->GetBitmapInfo("EyeR_White"));
-    pNewObject->GetBitmapInfo("EyeR_Lid")->SetParentImage(pNewObject->GetBitmapInfo("EyeR_White"));
+    pNewObject->GetBitmapInfo("EyeL_Brow")->SetParentImage(pNewObject->GetBitmapInfo("Null_EyeL"));
+    pNewObject->GetBitmapInfo("EyeL_Lid")->SetParentImage(pNewObject->GetBitmapInfo("Null_EyeL"));
+    pNewObject->GetBitmapInfo("EyeL_White")->SetParentImage(pNewObject->GetBitmapInfo("Null_EyeL"));
+
     pNewObject->GetBitmapInfo("EyeR_Pupil")->SetParentImage(pNewObject->GetBitmapInfo("EyeR_White"));
+
+    pNewObject->GetBitmapInfo("EyeR_Brow")->SetParentImage(pNewObject->GetBitmapInfo("Null_EyeR"));
+    pNewObject->GetBitmapInfo("EyeR_Lid")->SetParentImage(pNewObject->GetBitmapInfo("Null_EyeR"));
+    pNewObject->GetBitmapInfo("EyeR_White")->SetParentImage(pNewObject->GetBitmapInfo("Null_EyeR"));
 
     pNewObject->GetBitmapInfo("HairF_SideL")->SetParentImage(pNewObject->GetBitmapInfo("Null_Hair"));
     pNewObject->GetBitmapInfo("HairF_SideR")->SetParentImage(pNewObject->GetBitmapInfo("Null_Hair"));
@@ -786,10 +877,45 @@ void MyFirstWndGame::CreatePlayer()
 
 	// 애니메이터 설정
 	pNewObject->GetAnimator().SetOwner(pNewObject);
-	pNewObject->GetAnimator().AddAnimationClip(CoffiaAnimationClips::TestClip()); 
-    //pNewObject->GetAnimator().SetCurrentClip("TestClip");
+    pNewObject->GetAnimator().AddAnimationClip(CoffiaAnimationClips::Idle_Clip());
+    pNewObject->GetAnimator().AddAnimationClip(CoffiaAnimationClips::Idle_ChinRest_Clip());
+    pNewObject->GetAnimator().AddAnimationClip(CoffiaAnimationClips::Greeting_Clip());
+    pNewObject->GetAnimator().AddAnimationClip(CoffiaAnimationClips::Greeting_SmilingEyes_Clip());
+    pNewObject->GetAnimator().AddAnimationClip(CoffiaAnimationClips::BowGreeting_Clip());
+    pNewObject->GetAnimator().AddAnimationClip(CoffiaAnimationClips::BowGreeting_Happy_Clip());
+    pNewObject->GetAnimator().AddAnimationClip(CoffiaAnimationClips::LookRight_Clip());
+    pNewObject->GetAnimator().AddAnimationClip(CoffiaAnimationClips::LookLeft_Clip());
+    pNewObject->GetAnimator().AddAnimationClip(CoffiaAnimationClips::Talk_Clip());
+    pNewObject->GetAnimator().AddAnimationClip(CoffiaAnimationClips::Talk_Happy_Clip());
+    pNewObject->GetAnimator().AddAnimationClip(CoffiaAnimationClips::Talk_Angry_Clip());
+    pNewObject->GetAnimator().AddAnimationClip(CoffiaAnimationClips::Talk_LowEnergy_Clip());
+    pNewObject->GetAnimator().AddAnimationClip(CoffiaAnimationClips::Talk_ChinRest_Clip());
+    pNewObject->GetAnimator().AddAnimationClip(CoffiaAnimationClips::Talk_ChinRest_Happy_Clip());
+    pNewObject->GetAnimator().AddAnimationClip(CoffiaAnimationClips::Talk_ChinRest_Angry_Clip());
+    pNewObject->GetAnimator().AddAnimationClip(CoffiaAnimationClips::Talk_ChinRest_LowEnergy_Clip());
+    pNewObject->GetAnimator().SetCurrentClip("Greeting_SmilingEyes_Clip");
 
-    m_GameObjectPtrTable[0] = pNewObject; // 첫번째 자리에 만든 객체 넣기
+
+    pNewObject->GetBitmapInfo("Null_All")->GetTransform().SetScale(Vector2f(0.8f, 0.8f));
+
+    //m_GameObjectPtrTable[0] = pNewObject; // 첫번째 자리에 만든 객체 넣기
+
+    int i = 0;
+    while (++i < MAX_GAME_OBJECT_COUNT) //0번째는 언제나 플레이어!
+    {
+        if (nullptr == m_GameObjectPtrTable[i])
+        {
+            m_GameObjectPtrTable[i] = pNewObject;
+            break;
+        }
+    }
+
+    if (i == MAX_GAME_OBJECT_COUNT)
+    {
+        // 게임 오브젝트 테이블이 가득 찼습니다.
+        delete pNewObject;
+        pNewObject = nullptr;
+    }
 }
 
 void MyFirstWndGame::CreateEnemy()
@@ -950,10 +1076,14 @@ void MyFirstWndGame::Render()
     {
         if (m_GameObjectPtrTable[i])
         {
+            cout << "Updating GameObject: " << m_GameObjectPtrTable[i]->GetName() << endl;
+            m_GameObjectPtrTable[i]->Render(m_hBackDC, RGB(255, 0, 0));
+            /*
             if (IsValidSpawnPosition(m_GameObjectPtrTable[i]->GetPosition(), i))
                 m_GameObjectPtrTable[i]->Render(m_hBackDC, RGB(255, 0, 0));
             else
                 m_GameObjectPtrTable[i]->Render(m_hBackDC, RGB(0, 0, 255));
+                */
         }
     }
 

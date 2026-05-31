@@ -3,6 +3,7 @@
 #include "RenderHelp.h"
 #include <vector>
 #include <cmath>
+#include <iostream>
 
 void AnimationClip::AddKeyFrame(const KeyFrame& keyFrame)
 {
@@ -50,7 +51,7 @@ void Animator::Play(float deltaTime)
 
 	// 현재 클립과 키프레임 목록 가져오기
 	AnimationClip& currentClip = animationClips[currentClipIndex];
-	const vector<KeyFrame>& keyFrames = currentClip.GetKeyFrames();
+	vector<KeyFrame>& keyFrames = currentClip.GetKeyFrames();
 
 	// 키프레임이 없는 경우 스킵
 	if (keyFrames.empty()) return;
@@ -68,6 +69,11 @@ void Animator::Play(float deltaTime)
 		if (currentClip.GetIsLooping())
 		{
 			time = fmodf(time, clipLength);
+
+			for (KeyFrame& keyFrame : keyFrames)
+			{
+				keyFrame.SetHasStarted(false);
+			}
 		}
 		else
 		{
@@ -76,13 +82,43 @@ void Animator::Play(float deltaTime)
 	}
 
 	// 키프레임 적용
-	for (const KeyFrame& keyFrame : keyFrames)
+	for ( KeyFrame& keyFrame : keyFrames)
 	{
 		float startTime = keyFrame.startTime;
 		float endTime = keyFrame.startTime + keyFrame.duration;
 
+		if (keyFrame.duration <= 0.0f)
+		{
+			if (time >= startTime && !keyFrame.hasStarted)
+			{
+				keyFrame.SetHasStarted(true);
+				ApplyKeyFrame(keyFrame, 1.0f);
+			}
+
+			continue;
+		}
+
 		if (time < startTime || time > endTime)
 			continue;
+
+		// 키 프레임이 시작될 때를 기준으로 startValue를 설정 (1회 초기화)
+		if (!keyFrame.hasStarted && keyFrame.useCurrentAsStartValue) 
+		{
+			keyFrame.SetHasStarted(true);
+			renderHelp::BitmapInfo* bitmapInfo = owner->GetBitmapInfo(keyFrame.ImageName);
+
+			if (bitmapInfo) {
+				if (keyFrame.type == KeyFrameType::Position) {
+					keyFrame.SetStartValue(bitmapInfo->GetAniTransform().position);
+				}
+				else if (keyFrame.type == KeyFrameType::Scale) {
+					keyFrame.SetStartValue(bitmapInfo->GetAniTransform().scale);
+				}
+				else if (keyFrame.type == KeyFrameType::Rotation) {
+					keyFrame.SetStartValue(bitmapInfo->GetAniTransform().rotation);
+				}
+			}
+		}
 
 		float t = 0.0f;
 
@@ -94,9 +130,6 @@ void Animator::Play(float deltaTime)
 		{
 			t = 1.0f;
 		}
-
-		if (t > 1.0f) 
-			t = 1.0f;
 
 		float easedT = ApplyEase(t, keyFrame.easeType);
 
@@ -120,12 +153,7 @@ float Animator::ApplyEase(float t, EaseType easeType)
 	case EaseType::EaseOut:
 		return 1.0f - (1.0f - t) * (1.0f - t);
 	case EaseType::EaseInOut:
-		if (t < 0.5f) {
-			return 2.0f * t * t;
-		}
-		else {
-			return 1.0f - powf(-2 * t + 2, 2) / 2.0f;
-		}
+		return t * t * (3.0f - 2.0f * t);
 	}
 	return t;
 }
@@ -135,6 +163,10 @@ void Animator::ApplyKeyFrame(const KeyFrame& keyFrame, float t)
 	if (owner == nullptr) return;
 	renderHelp::BitmapInfo* bitmapInfo = owner->GetBitmapInfo(keyFrame.ImageName);
 	
+	//bitmapInfo->SetActive(false);
+
+	//cout << "Drawing Bitmap: " << bitmapInfo->GetName() << ", Frame: " << bitmapInfo->GetActive() << endl;
+
 	switch (keyFrame.type) {
 		case KeyFrameType::Position:
 		{
@@ -168,46 +200,88 @@ void Animator::ApplyKeyFrame(const KeyFrame& keyFrame, float t)
 KeyFrame AnimationClip::MakePositionKeyFrame(float startTime, const string& imageName, Vector2f startValue, Vector2f endValue, float duration, EaseType easeType)
 {
 	KeyFrame keyFrame;
-	keyFrame.startTime = startTime;
+	keyFrame.startTime = startTime / 60.0f;
 	keyFrame.ImageName = imageName;
 	keyFrame.type = KeyFrameType::Position;
 	keyFrame.startValue = startValue;
 	keyFrame.endValue = endValue;
-	keyFrame.duration = duration;
+	keyFrame.duration = duration / 60.0f;
 	keyFrame.easeType = easeType;
+	keyFrame.useCurrentAsStartValue = false;
 	return keyFrame;
 }
 
 KeyFrame AnimationClip::MakeRotationKeyFrame(float startTime, const string& imageName, float startAngle, float endAngle, float duration, EaseType easeType)
 {
 	KeyFrame keyFrame;
-	keyFrame.startTime = startTime;
+	keyFrame.startTime = startTime / 60.0f;
 	keyFrame.ImageName = imageName;
 	keyFrame.type = KeyFrameType::Rotation;
 	keyFrame.startValue = Vector2f(startAngle, 0); // 회전은 x값만 사용
 	keyFrame.endValue = Vector2f(endAngle, 0);
-	keyFrame.duration = duration;
+	keyFrame.duration = duration / 60.0f;
 	keyFrame.easeType = easeType;
+	keyFrame.useCurrentAsStartValue = false;
 	return keyFrame;
 }
 
 KeyFrame AnimationClip::MakeScaleKeyFrame(float startTime, const string& imageName, Vector2f startScale, Vector2f endScale, float duration, EaseType easeType)
 {
 	KeyFrame keyFrame;
-	keyFrame.startTime = startTime;
+	keyFrame.startTime = startTime / 60.0f;
 	keyFrame.ImageName = imageName;
 	keyFrame.type = KeyFrameType::Scale;
 	keyFrame.startValue = startScale;
 	keyFrame.endValue = endScale;
-	keyFrame.duration = duration;
+	keyFrame.duration = duration / 60.0f;
 	keyFrame.easeType = easeType;
+	keyFrame.useCurrentAsStartValue = false;
+	return keyFrame;
+}
+
+KeyFrame AnimationClip::MakePositionKeyFrame(float startTime, const string& imageName, Vector2f endValue, float duration, EaseType easeType)
+{
+	KeyFrame keyFrame;
+	keyFrame.startTime = startTime / 60.0f;
+	keyFrame.ImageName = imageName;
+	keyFrame.type = KeyFrameType::Position;
+	keyFrame.endValue = endValue;
+	keyFrame.duration = duration / 60.0f;
+	keyFrame.easeType = easeType;
+	keyFrame.useCurrentAsStartValue = true;
+	return keyFrame;
+}
+
+KeyFrame AnimationClip::MakeRotationKeyFrame(float startTime, const string& imageName, float endAngle, float duration, EaseType easeType)
+{
+	KeyFrame keyFrame;
+	keyFrame.startTime = startTime / 60.0f;
+	keyFrame.ImageName = imageName;
+	keyFrame.type = KeyFrameType::Rotation;
+	keyFrame.endValue = Vector2f(endAngle, 0);
+	keyFrame.duration = duration / 60.0f;
+	keyFrame.easeType = easeType;
+	keyFrame.useCurrentAsStartValue = true;
+	return keyFrame;
+}
+
+KeyFrame AnimationClip::MakeScaleKeyFrame(float startTime, const string& imageName, Vector2f endScale, float duration, EaseType easeType)
+{
+	KeyFrame keyFrame;
+	keyFrame.startTime = startTime / 60.0f;
+	keyFrame.ImageName = imageName;
+	keyFrame.type = KeyFrameType::Scale;
+	keyFrame.endValue = endScale;
+	keyFrame.duration = duration / 60.0f;
+	keyFrame.easeType = easeType;
+	keyFrame.useCurrentAsStartValue = true;
 	return keyFrame;
 }
 
 KeyFrame AnimationClip::MakeSpriteKeyFrame(float startTime, const string& imageName, int frameIndex)
 {
 	KeyFrame keyFrame;
-	keyFrame.startTime = startTime;
+	keyFrame.startTime = startTime / 60.0f;
 	keyFrame.ImageName = imageName;
 	keyFrame.type = KeyFrameType::Sprite;
 	keyFrame.valueInt = frameIndex;
@@ -219,7 +293,7 @@ KeyFrame AnimationClip::MakeSpriteKeyFrame(float startTime, const string& imageN
 KeyFrame AnimationClip::MakeActiveKeyFrame(float startTime, const string& imageName, bool isActive)
 {
 	KeyFrame keyFrame;
-	keyFrame.startTime = startTime;
+	keyFrame.startTime = startTime / 60.0f;
 	keyFrame.ImageName = imageName;
 	keyFrame.type = KeyFrameType::Active;
 	keyFrame.valueInt = isActive ? 1 : 0;

@@ -36,6 +36,7 @@ void GameObject::AddBitmapInfo(BitmapInfo* bitmapInfo)
 // _오브젝트 하나의 업데이트
 void GameObject::Update(float deltaTime)
 {
+
     // _로직 업데이트 안에서 먼저 방향벡터 설정했으니, 
     Move(deltaTime);
 
@@ -233,15 +234,19 @@ void GameObject::DrawBitmap(HDC hdc)
 
         if (m_pBitmapInfo[i] == nullptr) continue;
         if (m_pBitmapInfo[i]->GetBitmapHandle() == nullptr) continue;
+
+        //cout << "Drawing Bitmap: " << m_pBitmapInfo[i]->GetName() << ", Frame: " << m_pBitmapInfo[i]->GetActive() << endl;
         if (!(m_pBitmapInfo[i]->GetActive())) continue;
 
         HBITMAP hOldBitmap = (HBITMAP)SelectObject(hBitmapDC, m_pBitmapInfo[i]->GetBitmapHandle());
+
 
         // BLENDFUNCTION 설정 (알파 채널 처리)
         BLENDFUNCTION blend = { 0 };
         blend.BlendOp = AC_SRC_OVER;
         blend.SourceConstantAlpha = 255;  // 원본 알파 채널 그대로 사용
         blend.AlphaFormat = AC_SRC_ALPHA;
+
 
 		// 이미지의 월드 Transform
         Transform worldTransform = m_pBitmapInfo[i]->GetWorldTransform() + Transform{ m_pos, 0, Vector2f{1,1} };
@@ -280,7 +285,7 @@ void GameObject::DrawBitmap(HDC hdc)
         RestoreDC(hdc, -1);
 
 		// 피벗 마커 그리기 (디버그용)
-        DrawPivotMarker(hdc, pivotPos);
+        //DrawPivotMarker(hdc, pivotPos);
 
         // 비트맵 핸들 복원
         SelectObject(hBitmapDC, hOldBitmap);

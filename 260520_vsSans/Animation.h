@@ -40,6 +40,13 @@ struct KeyFrame
 
 	float duration;		// 애니메이션 지속 시간
 	EaseType easeType;	// 보간 타입
+
+	bool hasStarted = false; // 애니메이션이 시작되었는지 여부(키프레임 시작 후 1회 초기화용)
+	bool useCurrentAsStartValue = false; // 현재 값을 시작 값으로 사용할지 여부 
+
+	void SetStartValue(const Vector2f& value) { startValue = value; }
+	void SetStartValue(float value) { startValue = Vector2f(value, 0); }
+	void SetHasStarted(bool started) { hasStarted = started; }
 };
 
 class AnimationClip 
@@ -49,7 +56,7 @@ public:
 	const string& GetName() const { return name; }
 
 	void AddKeyFrame(const KeyFrame& keyFrame);
-	const vector<KeyFrame>& GetKeyFrames() const { return keyFrames; }
+	vector<KeyFrame>& GetKeyFrames() { return keyFrames; }
 
 	void SetIsLooping(bool loop) { isLooping = loop; }
 	bool GetIsLooping() const {	return isLooping; }
@@ -61,6 +68,10 @@ public:
 	KeyFrame MakeScaleKeyFrame(float startTime, const string& imageName, Vector2f startScale, Vector2f endScale, float duration, EaseType easeType);
 	KeyFrame MakeSpriteKeyFrame(float startTime, const string& imageName, int frameIndex);
 	KeyFrame MakeActiveKeyFrame(float startTime, const string& imageName, bool isActive);
+
+	KeyFrame MakePositionKeyFrame(float startTime, const string& imageName, Vector2f endValue, float duration, EaseType easeType);
+	KeyFrame MakeRotationKeyFrame(float startTime, const string& imageName,float endAngle, float duration, EaseType easeType);
+	KeyFrame MakeScaleKeyFrame(float startTime, const string& imageName, Vector2f endScale, float duration, EaseType easeType);
 
 private:
 	string name;				// 애니메이션 클립 이름
