@@ -62,6 +62,8 @@ public:
     Vector2f GetPosition() const { return m_pos; }
     Vector2f GetDirection() const { return m_dir; }
 
+    virtual Animator& GetAnimator() = 0;
+
     float GetSpeed() const { return m_speed; }
 
     virtual Vector2f TryGetCollisionDirection(Vector2f pos, float angleOffset) = 0;

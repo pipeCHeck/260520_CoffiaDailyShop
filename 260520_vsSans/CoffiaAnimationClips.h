@@ -6,6 +6,8 @@ class CoffiaAnimationClips
 public:
 	static AnimationClip TestClip();
 
+	static AnimationClip ChinRest_Clip();
+
 	// ±âº»
 	static AnimationClip Idle_Clip();
 	static AnimationClip Idle_ChinRest_Clip();

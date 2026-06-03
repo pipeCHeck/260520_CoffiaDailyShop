@@ -85,6 +85,8 @@ class Animator
 public :
 	void AddAnimationClip(const AnimationClip& clip);
 	void SetCurrentClip(const string& clipName);
+	void PlayChinRest();
+	void PlayGreetingSmilingEyes();
 	void Play(float deltaTime);
 
 	void SetOwner(GameObject* owner);

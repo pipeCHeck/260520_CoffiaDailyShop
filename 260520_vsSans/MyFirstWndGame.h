@@ -160,7 +160,7 @@ private:
     int FindClosestObjectAt(learning::Vector2f pos, int selfIndex = -1, int ignoreIndex = -1);
     bool IsOverlapping(learning::Vector2f pos, float radius, GameObject* targetObject);
 
-    GameObject* GetPlayer() const { return (GameObject*)m_GameObjectPtrTable[0]; }
+    GameObject* GetPlayer() const;
     GameObject* GetGameObject(int index) const { return (GameObject*)m_GameObjectPtrTable[index]; }
 
 private:

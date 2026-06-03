@@ -154,12 +154,20 @@ bool MyFirstWndGame::Initialize()
 
 #pragma endregion
 
+
+    // [CHECK]. 첫 번째 게임 오브젝트는 플레이어 캐릭터로 고정!
+    CreateBackground();
+    CreatePlayer();
+    CreateTable();
+    
+
     // 키 입력 함수 정의
 #pragma region keyFunc
 
     // Z 키 입력 시
-    OnKeyDown['Z'] = [](int, int) {
+    OnKeyDown['Z'] = [this](int, int) {
         std::cout << "Z down" << std::endl;
+        OnZKeyDown();
         };
     OnKey['Z'] = []() {
         std::cout << "Z";
@@ -169,8 +177,9 @@ bool MyFirstWndGame::Initialize()
         };
 
     // X 키 입력 시
-    OnKeyDown['X'] = [](int, int) {
+    OnKeyDown['X'] = [this](int, int) {
         std::cout << "X down" << std::endl;
+        OnXKeyDown();
         };
     OnKey['X'] = []() {
         std::cout << "X";
@@ -228,10 +237,6 @@ bool MyFirstWndGame::Initialize()
 #pragma endregion
 
 
-    // [CHECK]. 첫 번째 게임 오브젝트는 플레이어 캐릭터로 고정!
-    CreateBackground();
-    CreatePlayer();
-    CreateTable();
 
     return true;
 
@@ -426,7 +431,7 @@ void MyFirstWndGame::CreateCoffia()
 
 void MyFirstWndGame::CreatePlayer()
 {
-    assert(m_GameObjectPtrTable[0] == nullptr && "Player object already exists!");  // _첫 인자가 거짓이면 에러
+    assert(GetPlayer() == nullptr && "Player object already exists!");  // _첫 인자가 거짓이면 에러
 
     GameObject* pNewObject = new GameObject(ObjectType::PLAYER);    // _객체를 하나 만드는데, enum 값 하나 지정함
 
@@ -453,7 +458,7 @@ void MyFirstWndGame::CreatePlayer()
     pNewObject->AddBitmapInfo(m_pArmL);
     image = pNewObject->GetLastBitmapInfo();
     image->SetName("ArmL");
-    image->GetTransform().SetPosition(Vector2f(-205, 210));
+    image->GetTransform().SetPosition(Vector2f(-175, 200));
 	image->GetPivot() = Vector2f(-45, 95);
 
     pNewObject->AddBitmapInfo(m_pHandL);
@@ -877,10 +882,12 @@ void MyFirstWndGame::CreatePlayer()
 
 	// 애니메이터 설정
 	pNewObject->GetAnimator().SetOwner(pNewObject);
+
+    pNewObject->GetAnimator().AddAnimationClip(CoffiaAnimationClips::ChinRest_Clip());  // 완
     pNewObject->GetAnimator().AddAnimationClip(CoffiaAnimationClips::Idle_Clip());
     pNewObject->GetAnimator().AddAnimationClip(CoffiaAnimationClips::Idle_ChinRest_Clip());
     pNewObject->GetAnimator().AddAnimationClip(CoffiaAnimationClips::Greeting_Clip());
-    pNewObject->GetAnimator().AddAnimationClip(CoffiaAnimationClips::Greeting_SmilingEyes_Clip());
+    pNewObject->GetAnimator().AddAnimationClip(CoffiaAnimationClips::Greeting_SmilingEyes_Clip());  // 완
     pNewObject->GetAnimator().AddAnimationClip(CoffiaAnimationClips::BowGreeting_Clip());
     pNewObject->GetAnimator().AddAnimationClip(CoffiaAnimationClips::BowGreeting_Happy_Clip());
     pNewObject->GetAnimator().AddAnimationClip(CoffiaAnimationClips::LookRight_Clip());
@@ -898,10 +905,8 @@ void MyFirstWndGame::CreatePlayer()
 
     pNewObject->GetBitmapInfo("Null_All")->GetTransform().SetScale(Vector2f(0.8f, 0.8f));
 
-    //m_GameObjectPtrTable[0] = pNewObject; // 첫번째 자리에 만든 객체 넣기
-
     int i = 0;
-    while (++i < MAX_GAME_OBJECT_COUNT) //0번째는 언제나 플레이어!
+    while (++i < MAX_GAME_OBJECT_COUNT) // 배경 뒤에 그려지도록 빈 슬롯에 배치
     {
         if (nullptr == m_GameObjectPtrTable[i])
         {
@@ -1151,7 +1156,10 @@ void MyFirstWndGame::OnRButtonDown(int x, int y)
     int angle = 0;  // 검사할 각도 0~359
     float spawnDistance = 0;
     std::vector<GameObjectBase*> nearbyObjects;
-    double radius = m_GameObjectPtrTable[0]->GetRadius();
+    GameObject* pPlayer = GetPlayer();
+    if (pPlayer == nullptr) return;
+
+    double radius = pPlayer->GetRadius();
 
     float minDistance = -1;
     float curDistance = 0;
@@ -1225,12 +1233,31 @@ void MyFirstWndGame::OnRButtonDown(int x, int y)
     }
 }
 
-void MyFirstWndGame::OnZKeyDown() {
+GameObject* MyFirstWndGame::GetPlayer() const
+{
+    for (int i = 0; i < MAX_GAME_OBJECT_COUNT; ++i)
+    {
+        if (m_GameObjectPtrTable[i] && m_GameObjectPtrTable[i]->Type() == ObjectType::PLAYER)
+        {
+            return (GameObject*)m_GameObjectPtrTable[i];
+        }
+    }
 
+    return nullptr;
+}
+
+void MyFirstWndGame::OnZKeyDown() {
+    GameObject* pPlayer = GetPlayer();
+    if (pPlayer == nullptr) return;
+
+    pPlayer->GetAnimator().PlayChinRest();
 }
 
 void MyFirstWndGame::OnXKeyDown() {
+    GameObject* pPlayer = GetPlayer();
+    if (pPlayer == nullptr) return;
 
+    pPlayer->GetAnimator().PlayGreetingSmilingEyes();
 }
 
 // _이 위치가 유효한 스폰 위치인지 확인하는 함수(겹치는거 있으면 false, 없는 true)

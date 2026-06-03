@@ -37,10 +37,26 @@ void Animator::SetCurrentClip(const string& clipName)
 		{
 			currentClipIndex = static_cast<int>(i);
 			time = 0.0f; // 클립이 변경될 때 시간 초기화
+
+			for (KeyFrame& keyFrame : animationClips[i].GetKeyFrames())
+			{
+				keyFrame.SetHasStarted(false);
+			}
+
 			return;
 		}
 	}
 	currentClipIndex = -1; // 클립을 찾지 못한 경우
+}
+
+void Animator::PlayChinRest()
+{
+	SetCurrentClip("ChinRest_Clip");
+}
+
+void Animator::PlayGreetingSmilingEyes()
+{
+	SetCurrentClip("Greeting_SmilingEyes_Clip");
 }
 
 void Animator::Play(float deltaTime)

@@ -1,17 +1,17 @@
 Adobe After Effects 9.0 Keyframe Data
 
 	Units Per Second	60
-	Source Width	65
-	Source Height	25
+	Source Width	82
+	Source Height	42
 	Source Pixel Aspect Ratio	1
 	Comp Pixel Aspect Ratio	1
 
 Layer
-Transform	Position
-	Frame	X pixels	Y pixels	Z pixels	
-	0	374.5	296.5	0	
-	20	374.5	296.5	0	
-	110	374.5	296.5	0	
-	140	374.5	296.5	0	
+Transform	Scale
+	Frame	X percent	Y percent	Z percent	
+	0	100	100	100	
+	45	100	124	100	
+	50	100	20	100	
+	66	100	102	100	
 
 End of Keyframe Data
